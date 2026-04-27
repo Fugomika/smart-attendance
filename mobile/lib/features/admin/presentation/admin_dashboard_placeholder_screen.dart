@@ -1,4 +1,4 @@
-import '../../shared/presentation/placeholder_screen.dart';
+import '../../../shared/widgets/placeholder_screen.dart';
 
 class AdminDashboardPlaceholderScreen extends PlaceholderScreen {
   const AdminDashboardPlaceholderScreen({super.key})

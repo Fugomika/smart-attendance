@@ -1,4 +1,4 @@
-import '../../shared/presentation/placeholder_screen.dart';
+import '../../../shared/widgets/placeholder_screen.dart';
 
 class EmployeeHomePlaceholderScreen extends PlaceholderScreen {
   const EmployeeHomePlaceholderScreen({super.key})

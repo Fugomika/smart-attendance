@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_text_styles.dart';
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_spacing.dart';
+import '../../app/theme/app_text_styles.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   const PlaceholderScreen({
     required this.title,
     required this.description,
     this.actions = const [],
+    this.icon = Icons.location_on_rounded,
     super.key,
   });
 
   final String title;
   final String description;
+  final IconData icon;
   final List<Widget> actions;
 
   @override
@@ -30,7 +32,7 @@ class PlaceholderScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Icon(
-                    Icons.location_on_rounded,
+                    icon,
                     size: 72,
                     color: Theme.of(context).colorScheme.primary,
                   ),

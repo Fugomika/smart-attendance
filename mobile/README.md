@@ -1,17 +1,94 @@
-# smartattendnace
+# Smart Attendance Mobile
 
-A new Flutter project.
+Smart Attendance adalah aplikasi presensi internal kantor berbasis Flutter. Aplikasi ini memiliki dua mode, yaitu mode karyawan dan mode admin.
 
-## Getting Started
+Pada tahap ini aplikasi masih menggunakan data dummy dan belum terhubung ke backend/API.
 
-This project is a starting point for a Flutter application.
+## Fitur Sementara
 
-A few resources to get you started if this is your first Flutter project:
+- Login dummy untuk karyawan dan admin
+- Tampilan dasar untuk mode karyawan
+- Tampilan dasar untuk mode admin
+- Routing dasar antar halaman
+- Tema warna sesuai style guide
+- Komponen UI reusable dasar
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Tech Stack
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter
+- Dart
+- Riverpod untuk state management
+- GoRouter untuk routing
+- Google Fonts untuk font Poppins
+- Intl untuk format tanggal dan waktu
+
+## Testing Stack
+
+- Flutter Test untuk widget test
+- Flutter Analyze untuk pengecekan kualitas kode
+
+## Akun Dummy
+
+Karyawan:
+
+```txt
+Email    : user@gmail.com
+Password : password
+```
+
+Admin:
+
+```txt
+Email    : admin@gmail.com
+Password : password
+```
+
+## Struktur Folder
+
+```txt
+lib/
+  app/        konfigurasi aplikasi, routing, dan theme
+  core/       enum dan helper umum
+  data/       model, dummy data, dan repository dummy
+  features/   fitur aplikasi seperti auth, employee, dan admin
+  shared/     widget reusable yang dipakai di banyak halaman
+```
+
+## Architecture
+
+Project ini menggunakan struktur sederhana berbasis fitur.
+
+- `app` digunakan untuk pengaturan utama aplikasi seperti theme dan routing.
+- `core` digunakan untuk kebutuhan umum yang bisa dipakai di banyak fitur.
+- `data` digunakan untuk menyimpan model, dummy data, dan repository.
+- `features` digunakan untuk memisahkan bagian aplikasi berdasarkan fitur.
+- `shared` digunakan untuk komponen UI yang dipakai berulang.
+
+Alur data sementara:
+
+```txt
+Dummy Data -> Repository -> Provider -> Screen
+```
+
+Nantinya saat backend sudah tersedia, bagian dummy data dapat diganti dengan API tanpa mengubah terlalu banyak struktur halaman.
+
+## Menjalankan Project
+
+```bash
+flutter pub get
+flutter run
+```
+
+Untuk pengecekan kode:
+
+```bash
+flutter analyze
+flutter test
+```
+
+## Catatan
+
+- Backend/API belum digunakan.
+- Camera, GPS, dan map asli belum diimplementasikan.
+- Tampilan fitur masih berupa placeholder.
+- Implementasi UI final akan dikerjakan bertahap pada tahap berikutnya.

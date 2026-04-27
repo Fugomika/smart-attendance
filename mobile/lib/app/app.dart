@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
-class SmartAttendanceApp extends StatelessWidget {
+class SmartAttendanceApp extends ConsumerWidget {
   const SmartAttendanceApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Smart Attendance',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      routerConfig: AppRouter.router,
+      routerConfig: ref.watch(appRouterProvider),
     );
   }
 }
