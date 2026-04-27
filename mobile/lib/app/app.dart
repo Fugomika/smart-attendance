@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 
-import 'theme/app_colors.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
+import '../shared/widgets/app_system_overlay.dart';
 
 class SmartAttendanceApp extends ConsumerWidget {
   const SmartAttendanceApp({super.key});
@@ -18,14 +17,7 @@ class SmartAttendanceApp extends ConsumerWidget {
       themeMode: ThemeMode.light,
       routerConfig: ref.watch(appRouterProvider),
       builder: (context, child) {
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
-            statusBarColor: AppColors.background,
-            statusBarIconBrightness: Brightness.dark,
-            statusBarBrightness: Brightness.light,
-            systemNavigationBarColor: AppColors.surface,
-            systemNavigationBarIconBrightness: Brightness.dark,
-          ),
+        return AppSystemOverlay.darkIcons(
           child: child ?? const SizedBox.shrink(),
         );
       },

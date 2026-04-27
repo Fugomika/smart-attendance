@@ -9,7 +9,7 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/presentation/forgot_password_placeholder_screen.dart';
 import '../../features/auth/presentation/login_placeholder_screen.dart';
 import '../../features/auth/presentation/register_placeholder_screen.dart';
-import '../../features/auth/presentation/welcome_placeholder_screen.dart';
+import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/employee/presentation/employee_placeholder_tab.dart';
 import '../../features/employee/presentation/employee_shell.dart';
 import 'route_names.dart';
@@ -50,7 +50,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.welcome,
         name: RouteNames.welcomeName,
         pageBuilder: (context, state) =>
-            _noTransitionPage(state, const WelcomePlaceholderScreen()),
+            _noTransitionPage(state, const WelcomeScreen()),
       ),
       GoRoute(
         path: RouteNames.login,
