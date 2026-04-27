@@ -7,7 +7,6 @@ class RouteNames {
   static const String forgotPassword = '/forgot-password';
   static const String employeeHome = '/employee/home';
   static const String employeeHistory = '/employee/history';
-  static const String employeeNotifications = '/employee/notifications';
   static const String employeeProfile = '/employee/profile';
   static const String adminDashboard = '/admin/dashboard';
   static const String adminEmployees = '/admin/employees';
@@ -20,7 +19,6 @@ class RouteNames {
   static const String forgotPasswordName = 'forgot-password';
   static const String employeeHomeName = 'employee-home';
   static const String employeeHistoryName = 'employee-history';
-  static const String employeeNotificationsName = 'employee-notifications';
   static const String employeeProfileName = 'employee-profile';
   static const String adminDashboardName = 'admin-dashboard';
   static const String adminEmployeesName = 'admin-employees';

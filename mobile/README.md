@@ -7,8 +7,8 @@ Pada tahap ini aplikasi masih menggunakan data dummy dan belum terhubung ke back
 ## Fitur Sementara
 
 - Login dummy untuk karyawan dan admin
-- Tampilan dasar untuk mode karyawan
-- Tampilan dasar untuk mode admin
+- Tampilan dasar mode karyawan: Home, Riwayat, Profil
+- Tampilan dasar mode admin: Dashboard, Karyawan, Laporan, Profil
 - Routing dasar antar halaman
 - Tema warna sesuai style guide
 - Komponen UI reusable dasar
@@ -54,6 +54,15 @@ lib/
   shared/     widget reusable yang dipakai di banyak halaman
 ```
 
+Folder asset:
+
+```txt
+assets/
+  images/         gambar umum seperti logo
+  icons/          icon custom jika dibutuhkan
+  illustrations/  ilustrasi halaman
+```
+
 ## Architecture
 
 Project ini menggunakan struktur sederhana berbasis fitur.
@@ -69,6 +78,8 @@ Alur data sementara:
 ```txt
 Dummy Data -> Repository -> Provider -> Screen
 ```
+
+Navigasi utama menggunakan shell navigation agar bottom navigation tetap stabil saat berpindah menu.
 
 Nantinya saat backend sudah tersedia, bagian dummy data dapat diganti dengan API tanpa mengubah terlalu banyak struktur halaman.
 

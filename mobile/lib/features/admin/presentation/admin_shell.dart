@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_bottom_nav.dart';
-import '../../../shared/widgets/app_button.dart';
-import '../../auth/providers/auth_provider.dart';
 
 class AdminShell extends ConsumerWidget {
-  const AdminShell({required this.currentIndex, super.key});
+  const AdminShell({required this.navigationShell, super.key});
 
-  final int currentIndex;
+  final StatefulNavigationShell navigationShell;
 
   static const _routes = [
     RouteNames.adminDashboard,
@@ -47,42 +43,16 @@ class AdminShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(_items[currentIndex].activeIcon, size: 72),
-                const SizedBox(height: AppSpacing.lg),
-                Text(_items[currentIndex].label, style: AppTextStyles.h1),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Admin ${_items[currentIndex].label} placeholder.',
-                  style: AppTextStyles.body,
-                  textAlign: TextAlign.center,
-                ),
-                if (currentIndex == 3) ...[
-                  const SizedBox(height: AppSpacing.xl),
-                  AppButton(
-                    label: 'Logout',
-                    variant: AppButtonVariant.danger,
-                    onPressed: () {
-                      ref.read(authControllerProvider.notifier).logout();
-                      context.go(RouteNames.login);
-                    },
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
+      body: navigationShell,
       bottomNavigationBar: AppBottomNav(
-        currentIndex: currentIndex,
+        currentIndex: navigationShell.currentIndex,
         items: _items,
-        onTap: (index) => context.go(_routes[index]),
+        onTap: (index) {
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
       ),
     );
   }
