@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -164,8 +165,7 @@ class _LoginPlaceholderScreenState
                       ),
                       const Spacer(),
                       TextButton(
-                        onPressed: () =>
-                            context.go(RouteNames.forgotPassword),
+                        onPressed: () => context.go(RouteNames.forgotPassword),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(48, 36),
@@ -187,6 +187,34 @@ class _LoginPlaceholderScreenState
                     label: authState.isLoading ? 'Memproses...' : 'Masuk',
                     onPressed: authState.isLoading ? null : _submit,
                   ),
+                  if (kDebugMode) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            label: 'Dev Admin',
+                            size: AppButtonSize.medium,
+                            variant: AppButtonVariant.secondary,
+                            onPressed: authState.isLoading
+                                ? null
+                                : () => _quickLogin('admin@gmail.com'),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: AppButton(
+                            label: 'Dev Karyawan',
+                            size: AppButtonSize.medium,
+                            variant: AppButtonVariant.outline,
+                            onPressed: authState.isLoading
+                                ? null
+                                : () => _quickLogin('user@gmail.com'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.md),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -289,5 +317,31 @@ class _LoginPlaceholderScreenState
           : RouteNames.employeeHome,
     );
   }
-}
 
+  Future<void> _quickLogin(String email) async {
+    FocusScope.of(context).unfocus();
+
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .login(email: email, password: 'password');
+
+    if (!mounted) {
+      return;
+    }
+
+    if (!success) {
+      final message =
+          ref.read(authControllerProvider).errorMessage ??
+          'Email atau password salah.';
+      AppSnackBar.error(context, message);
+      return;
+    }
+
+    final role = ref.read(authControllerProvider).user!.role;
+    context.go(
+      role == UserRole.admin
+          ? RouteNames.adminDashboard
+          : RouteNames.employeeHome,
+    );
+  }
+}

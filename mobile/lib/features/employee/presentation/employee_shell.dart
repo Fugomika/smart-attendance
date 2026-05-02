@@ -2,19 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/router/route_names.dart';
 import '../../../shared/widgets/app_bottom_nav.dart';
 
 class EmployeeShell extends ConsumerWidget {
   const EmployeeShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
-
-  static const _routes = [
-    RouteNames.employeeHome,
-    RouteNames.employeeHistory,
-    RouteNames.employeeProfile,
-  ];
 
   static const _items = [
     AppBottomNavItem(

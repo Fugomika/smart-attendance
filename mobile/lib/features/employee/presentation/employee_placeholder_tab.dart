@@ -8,12 +8,16 @@ class EmployeePlaceholderTab extends StatelessWidget {
   const EmployeePlaceholderTab({
     required this.title,
     required this.icon,
+    this.actionLabel,
+    this.onAction,
     this.onLogout,
     super.key,
   });
 
   final String title;
   final IconData icon;
+  final String? actionLabel;
+  final VoidCallback? onAction;
   final VoidCallback? onLogout;
 
   @override
@@ -34,8 +38,21 @@ class EmployeePlaceholderTab extends StatelessWidget {
                 style: AppTextStyles.body,
                 textAlign: TextAlign.center,
               ),
-              if (onLogout != null) ...[
+              if (onAction != null && actionLabel != null) ...[
                 const SizedBox(height: AppSpacing.xl),
+                AppButton(
+                  label: actionLabel!,
+                  variant: AppButtonVariant.secondary,
+                  icon: Icons.admin_panel_settings_rounded,
+                  onPressed: onAction,
+                ),
+              ],
+              if (onLogout != null) ...[
+                SizedBox(
+                  height: onAction != null && actionLabel != null
+                      ? AppSpacing.md
+                      : AppSpacing.xl,
+                ),
                 AppButton(
                   label: 'Logout',
                   variant: AppButtonVariant.danger,

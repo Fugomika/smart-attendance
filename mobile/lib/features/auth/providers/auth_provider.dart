@@ -1,8 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/enums/app_mode.dart';
+import '../../../core/enums/user_role.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../shared/providers/app_mode_provider.dart';
 
 class AuthState extends Equatable {
   const AuthState({this.user, this.errorMessage, this.isLoading = false});
@@ -45,6 +48,12 @@ class AuthController extends Notifier<AuthState> {
       return false;
     }
 
+    ref
+        .read(appModeProvider.notifier)
+        .setModeForRole(
+          role: user.role,
+          mode: user.role == UserRole.admin ? AppMode.admin : AppMode.employee,
+        );
     state = AuthState(user: user);
     return true;
   }
@@ -83,6 +92,7 @@ class AuthController extends Notifier<AuthState> {
   }
 
   void logout() {
+    ref.read(appModeProvider.notifier).reset();
     state = const AuthState();
   }
 }
