@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'admin_repository.dart';
 import 'attendance_repository.dart';
 import 'auth_repository.dart';
+import 'office_repository.dart';
 import 'user_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -15,6 +16,10 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 
 final attendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
   return const AttendanceRepository();
+});
+
+final officeRepositoryProvider = Provider<OfficeRepository>((ref) {
+  return const OfficeRepository();
 });
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {

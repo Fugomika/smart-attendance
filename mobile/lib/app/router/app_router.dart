@@ -11,6 +11,7 @@ import '../../features/auth/presentation/forgot_password_placeholder_screen.dart
 import '../../features/auth/presentation/login_placeholder_screen.dart';
 import '../../features/auth/presentation/register_placeholder_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
+import '../../features/employee/presentation/employee_home_screen.dart';
 import '../../features/employee/presentation/employee_placeholder_tab.dart';
 import '../../features/employee/presentation/employee_shell.dart';
 import '../../features/shared/providers/app_mode_provider.dart';
@@ -100,13 +101,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.employeeHome,
                 name: RouteNames.employeeHomeName,
-                pageBuilder: (context, state) => _noTransitionPage(
-                  state,
-                  const EmployeePlaceholderTab(
-                    title: 'Home',
-                    icon: Icons.home_rounded,
-                  ),
-                ),
+                pageBuilder: (context, state) =>
+                    _noTransitionPage(state, const EmployeeHomeScreen()),
               ),
             ],
           ),
