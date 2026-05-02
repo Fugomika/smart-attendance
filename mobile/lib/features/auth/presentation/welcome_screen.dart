@@ -15,8 +15,15 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppSystemOverlay.lightIcons(
+      statusBarColor: Colors.transparent,
+      navigationBarColor: Colors.transparent,
       child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBody: true,
+        extendBodyBehindAppBar: true,
         body: Container(
+          width: double.infinity,
+          height: double.infinity,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -25,36 +32,25 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
           child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final topGap = (constraints.maxHeight * 0.12).clamp(
-                  AppSpacing.lg,
-                  72.0,
-                );
-                final actionGap = (constraints.maxHeight * 0.12).clamp(
-                  AppSpacing.xl,
-                  88.0,
-                );
-
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        AppSpacing.xl,
-                        AppSpacing.lg,
-                        AppSpacing.lg,
-                      ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: Center(
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(height: topGap),
                           Image.asset(
                             AppAssets.logo,
-                            width: 88,
-                            height: 88,
+                            width: 80,
+                            height: 80,
                             fit: BoxFit.contain,
                           ),
                           const SizedBox(height: AppSpacing.md),
@@ -63,45 +59,51 @@ class WelcomeScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: AppTextStyles.h1.copyWith(
                               color: AppColors.surface,
-                              fontSize: 34,
+                              fontSize: 32,
                               fontWeight: FontWeight.w700,
-                              height: 1.15,
+                              height: 1.2,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.md),
+                          const SizedBox(height: AppSpacing.sm),
                           Text(
                             'Presensi cerdas dengan\nselfie dan lokasi real-time',
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.caption.copyWith(
+                            style: AppTextStyles.body.copyWith(
                               color: AppColors.surface,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              height: 1.45,
+                              height: 1.5,
                             ),
                           ),
-                          SizedBox(height: actionGap),
-                          _WelcomeActionButton(
-                            label: 'Masuk',
-                            backgroundColor: AppColors.surface,
-                            foregroundColor: AppColors.primary,
-                            borderColor: AppColors.surface,
-                            onPressed: () => context.go(RouteNames.login),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          _WelcomeActionButton(
-                            label: 'Daftar',
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: AppColors.surface,
-                            borderColor: AppColors.surface,
-                            onPressed: () => context.go(RouteNames.register),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
                         ],
                       ),
                     ),
                   ),
-                );
-              },
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _WelcomeActionButton(
+                          label: 'Masuk',
+                          backgroundColor: AppColors.surface,
+                          foregroundColor: AppColors.primary,
+                          borderColor: AppColors.surface,
+                          onPressed: () => context.go(RouteNames.login),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        _WelcomeActionButton(
+                          label: 'Daftar',
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: AppColors.surface,
+                          borderColor: AppColors.surface,
+                          onPressed: () => context.go(RouteNames.register),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -133,12 +135,12 @@ class _WelcomeActionButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          minimumSize: const Size.fromHeight(56),
+          minimumSize: const Size.fromHeight(52),
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
           textStyle: AppTextStyles.h2.copyWith(
             color: foregroundColor,
-            fontSize: 20,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
           shape: RoundedRectangleBorder(

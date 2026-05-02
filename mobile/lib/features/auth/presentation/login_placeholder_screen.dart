@@ -12,6 +12,7 @@ import '../../../core/enums/user_role.dart';
 import '../../../shared/utils/app_snack_bar.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
+import '../../../shared/widgets/app_text_field.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPlaceholderScreen extends ConsumerStatefulWidget {
@@ -54,57 +55,57 @@ class _LoginPlaceholderScreenState
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg,
-                AppSpacing.md,
+                AppSpacing.xl,
                 AppSpacing.lg,
                 AppSpacing.lg,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     'Selamat datang!',
                     style: AppTextStyles.h1.copyWith(
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(
                     'Silakan masuk untuk melanjutkan',
-                    style: AppTextStyles.h2.copyWith(
-                      color: AppColors.textMuted,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      height: 1.35,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Center(
                     child: Image.asset(
                       AppAssets.loginIllustration,
-                      height: 170,
+                      height: 200,
                       fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  _AuthInputField(
+                  AppTextField(
                     controller: _emailController,
                     hintText: 'email@gmail.com',
-                    icon: Icons.mail_outline_rounded,
+                    prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                     errorText: _emailError,
-                    enableSuggestions: false,
+                    textInputAction: TextInputAction.next,
                     onChanged: (_) => _clearEmailError(),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  _AuthInputField(
+                  AppTextField(
                     controller: _passwordController,
                     hintText: 'Password',
-                    icon: Icons.lock_outline_rounded,
+                    prefixIcon: Icons.lock_outline_rounded,
                     obscureText: !_isPasswordVisible,
                     errorText: _passwordError,
-                    enableSuggestions: false,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _submit(),
                     onChanged: (_) => _clearPasswordError(),
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -119,22 +120,28 @@ class _LoginPlaceholderScreenState
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: 24,
                         height: 24,
+                        width: 24,
                         child: Checkbox(
                           value: _isRemembered,
                           activeColor: AppColors.primary,
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppRadius.small,
                             ),
                           ),
-                          side: const BorderSide(
-                            color: AppColors.textSecondary,
+                          side: BorderSide(
+                            color: _isRemembered
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
                             width: 1.5,
                           ),
                           onChanged: (value) {
@@ -144,27 +151,27 @@ class _LoginPlaceholderScreenState
                           },
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.sm),
+                      const SizedBox(width: AppSpacing.xs),
                       Text(
-                        'ingat saya',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textMuted,
+                        'Ingat saya',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.sm),
                       const Spacer(),
                       TextButton(
-                        onPressed: () => context.go(RouteNames.forgotPassword),
+                        onPressed: () =>
+                            context.go(RouteNames.forgotPassword),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
+                          minimumSize: const Size(48, 36),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
-                          'lupa password?',
-                          style: AppTextStyles.caption.copyWith(
+                          'Lupa password?',
+                          style: AppTextStyles.body.copyWith(
                             color: AppColors.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -173,7 +180,7 @@ class _LoginPlaceholderScreenState
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.md),
                   AppButton(
                     label: authState.isLoading ? 'Memproses...' : 'Masuk',
                     onPressed: authState.isLoading ? null : _submit,
@@ -186,8 +193,9 @@ class _LoginPlaceholderScreenState
                         child: Text(
                           'Belum punya akun?',
                           style: AppTextStyles.body.copyWith(
-                            color: AppColors.textMuted,
+                            color: AppColors.textSecondary,
                             fontSize: 14,
+                            fontWeight: FontWeight.w400,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -198,7 +206,7 @@ class _LoginPlaceholderScreenState
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.xs,
                           ),
-                          minimumSize: Size.zero,
+                          minimumSize: const Size(48, 36),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
@@ -248,8 +256,8 @@ class _LoginPlaceholderScreenState
     final password = _passwordController.text;
 
     setState(() {
-      _emailError = email.isEmpty ? 'Email wajib diisi.' : null;
-      _passwordError = password.isEmpty ? 'Password wajib diisi.' : null;
+      _emailError = email.isEmpty ? 'Email wajib diisi' : null;
+      _passwordError = password.isEmpty ? 'Password wajib diisi' : null;
     });
 
     if (_emailError != null || _passwordError != null) {
@@ -281,87 +289,3 @@ class _LoginPlaceholderScreenState
   }
 }
 
-class _AuthInputField extends StatelessWidget {
-  const _AuthInputField({
-    required this.controller,
-    required this.hintText,
-    required this.icon,
-    this.keyboardType,
-    this.obscureText = false,
-    this.errorText,
-    this.onChanged,
-    this.suffixIcon,
-    this.enableSuggestions = true,
-  });
-
-  final TextEditingController controller;
-  final String hintText;
-  final IconData icon;
-  final TextInputType? keyboardType;
-  final bool obscureText;
-  final String? errorText;
-  final ValueChanged<String>? onChanged;
-  final Widget? suffixIcon;
-  final bool enableSuggestions;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      onChanged: onChanged,
-      autocorrect: false,
-      enableSuggestions: enableSuggestions,
-      style: AppTextStyles.h2.copyWith(
-        color: AppColors.textPrimary,
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTextStyles.body.copyWith(
-          color: AppColors.textMuted,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        errorText: errorText,
-        filled: true,
-        fillColor: AppColors.surface,
-        prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Icon(icon, color: AppColors.textSecondary, size: 24),
-        ),
-        prefixIconConstraints: const BoxConstraints(minWidth: 56),
-        suffixIcon: suffixIcon == null
-            ? null
-            : Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.md),
-                child: IconTheme(
-                  data: const IconThemeData(
-                    color: AppColors.textSecondary,
-                    size: 24,
-                  ),
-                  child: suffixIcon!,
-                ),
-              ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: 14,
-        ),
-        border: _border(AppColors.border),
-        enabledBorder: _border(AppColors.border),
-        focusedBorder: _border(AppColors.primary, width: 1.6),
-        errorBorder: _border(AppColors.danger, width: 1.6),
-        focusedErrorBorder: _border(AppColors.danger, width: 1.6),
-      ),
-    );
-  }
-
-  OutlineInputBorder _border(Color color, {double width = 1.2}) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppRadius.large),
-      borderSide: BorderSide(color: color, width: width),
-    );
-  }
-}

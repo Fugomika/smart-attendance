@@ -49,6 +49,30 @@ class AuthController extends Notifier<AuthState> {
     return true;
   }
 
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String position,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final repository = ref.read(authRepositoryProvider);
+    final user = await repository.register(
+      name: name,
+      email: email,
+      position: position,
+      password: password,
+    );
+
+    if (user == null) {
+      state = const AuthState(errorMessage: 'Email sudah terdaftar.');
+      return false;
+    }
+
+    state = const AuthState();
+    return true;
+  }
+
   void logout() {
     state = const AuthState();
   }
