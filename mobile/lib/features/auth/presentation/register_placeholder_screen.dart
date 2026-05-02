@@ -7,9 +7,10 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../shared/utils/app_snack_bar.dart';
+import '../../../shared/widgets/app_avatar_picker.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
-import '../../../shared/widgets/app_text_field.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterPlaceholderScreen extends ConsumerStatefulWidget {
@@ -36,6 +37,7 @@ class _RegisterPlaceholderScreenState
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  String? _photoPath;
 
   static final _emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
@@ -88,10 +90,23 @@ class _RegisterPlaceholderScreenState
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
-                  AppTextField(
+                  const SizedBox(height: AppSpacing.lg),
+                  Center(
+                    child: AppAvatarPicker(
+                      imagePath: _photoPath,
+                      label: 'Foto profil (opsional)',
+                      onChanged: (path) {
+                        setState(() {
+                          _photoPath = path;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppFormField(
+                    label: 'Nama lengkap',
                     controller: _nameController,
-                    hintText: 'Nama lengkap',
+                    hint: 'Contoh: Budi Santoso',
                     prefixIcon: Icons.person_outline_rounded,
                     keyboardType: TextInputType.name,
                     textInputAction: TextInputAction.next,
@@ -99,9 +114,10 @@ class _RegisterPlaceholderScreenState
                     onChanged: (_) => _clearError(() => _nameError = null),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  AppTextField(
+                  AppFormField(
+                    label: 'Email',
                     controller: _emailController,
-                    hintText: 'email@gmail.com',
+                    hint: 'email@gmail.com',
                     prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
@@ -109,9 +125,10 @@ class _RegisterPlaceholderScreenState
                     onChanged: (_) => _clearError(() => _emailError = null),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  AppTextField(
+                  AppFormField(
+                    label: 'Jabatan',
                     controller: _positionController,
-                    hintText: 'Jabatan',
+                    hint: 'Contoh: Staff IT',
                     prefixIcon: Icons.work_outline_rounded,
                     keyboardType: TextInputType.text,
                     textInputAction: TextInputAction.next,
@@ -119,9 +136,10 @@ class _RegisterPlaceholderScreenState
                     onChanged: (_) => _clearError(() => _positionError = null),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  AppTextField(
+                  AppFormField(
+                    label: 'Password',
                     controller: _passwordController,
-                    hintText: 'Password',
+                    hint: 'Minimal 6 karakter',
                     prefixIcon: Icons.lock_outline_rounded,
                     obscureText: !_isPasswordVisible,
                     textInputAction: TextInputAction.next,
@@ -141,9 +159,10 @@ class _RegisterPlaceholderScreenState
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  AppTextField(
+                  AppFormField(
+                    label: 'Konfirmasi password',
                     controller: _confirmPasswordController,
-                    hintText: 'Konfirmasi password',
+                    hint: 'Ulangi password',
                     prefixIcon: Icons.lock_outline_rounded,
                     obscureText: !_isConfirmPasswordVisible,
                     textInputAction: TextInputAction.done,
@@ -271,6 +290,7 @@ class _RegisterPlaceholderScreenState
           email: email,
           position: position,
           password: password,
+          photoPath: _photoPath,
         );
 
     if (!mounted) {

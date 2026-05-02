@@ -11,8 +11,8 @@ import '../../../core/constants/app_assets.dart';
 import '../../../core/enums/user_role.dart';
 import '../../../shared/utils/app_snack_bar.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
-import '../../../shared/widgets/app_text_field.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPlaceholderScreen extends ConsumerStatefulWidget {
@@ -88,9 +88,10 @@ class _LoginPlaceholderScreenState
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  AppTextField(
+                  AppFormField(
+                    label: 'Email',
                     controller: _emailController,
-                    hintText: 'email@gmail.com',
+                    hint: 'email@gmail.com',
                     prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                     errorText: _emailError,
@@ -98,9 +99,10 @@ class _LoginPlaceholderScreenState
                     onChanged: (_) => _clearEmailError(),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  AppTextField(
+                  AppFormField(
+                    label: 'Password',
                     controller: _passwordController,
-                    hintText: 'Password',
+                    hint: 'Masukkan password',
                     prefixIcon: Icons.lock_outline_rounded,
                     obscureText: !_isPasswordVisible,
                     errorText: _passwordError,

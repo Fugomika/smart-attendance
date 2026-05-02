@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/app_keys.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_radius.dart';
 import '../../app/theme/app_spacing.dart';
@@ -87,7 +88,9 @@ class AppSnackBar {
     required IconData icon,
     required Duration duration,
   }) {
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger =
+        AppKeys.scaffoldMessenger.currentState ??
+        ScaffoldMessenger.of(context);
 
     messenger
       ..hideCurrentSnackBar()

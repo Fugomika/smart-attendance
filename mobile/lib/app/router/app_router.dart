@@ -15,11 +15,14 @@ import '../../features/employee/presentation/employee_shell.dart';
 import 'route_names.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authControllerProvider);
+  final refresh = _GoRouterRefreshNotifier(ref);
+  ref.onDispose(refresh.dispose);
 
   return GoRouter(
     initialLocation: RouteNames.welcome,
+    refreshListenable: refresh,
     redirect: (context, state) {
+      final authState = ref.read(authControllerProvider);
       final location = state.matchedLocation;
       final isAuthRoute = RouteNames.authRoutes.contains(location);
       final isEmployeeRoute = location.startsWith('/employee');
@@ -203,4 +206,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 Page<void> _noTransitionPage(GoRouterState state, Widget child) {
   return NoTransitionPage<void>(key: state.pageKey, child: child);
+}
+
+class _GoRouterRefreshNotifier extends ChangeNotifier {
+  _GoRouterRefreshNotifier(Ref ref) {
+    _sub = ref.listen<AuthState>(
+      authControllerProvider,
+      (previous, next) {
+        final authChanged =
+            previous?.user != next.user ||
+            previous?.errorMessage != next.errorMessage ||
+            previous?.isLoading != next.isLoading;
+        if (authChanged) {
+          notifyListeners();
+        }
+      },
+    );
+  }
+
+  late final ProviderSubscription<AuthState> _sub;
+
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
+  }
 }

@@ -27,6 +27,7 @@ class AuthRepository {
     required String email,
     required String position,
     required String password,
+    String? photoPath,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
@@ -44,6 +45,13 @@ class AuthRepository {
       email: normalizedEmail,
       role: UserRole.employee,
       isActive: true,
+      photoId: photoPath,
     );
+  }
+
+  Future<void> requestPasswordReset({required String email}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    // Dummy: tidak peduli email terdaftar atau tidak. Selalu sukses generik
+    // untuk menghindari user enumeration. Diganti API saat backend siap.
   }
 }

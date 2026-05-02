@@ -54,6 +54,7 @@ class AuthController extends Notifier<AuthState> {
     required String email,
     required String position,
     required String password,
+    String? photoPath,
   }) async {
     state = state.copyWith(isLoading: true, clearError: true);
     final repository = ref.read(authRepositoryProvider);
@@ -62,6 +63,7 @@ class AuthController extends Notifier<AuthState> {
       email: email,
       position: position,
       password: password,
+      photoPath: photoPath,
     );
 
     if (user == null) {
@@ -71,6 +73,13 @@ class AuthController extends Notifier<AuthState> {
 
     state = const AuthState();
     return true;
+  }
+
+  Future<void> requestPasswordReset({required String email}) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final repository = ref.read(authRepositoryProvider);
+    await repository.requestPasswordReset(email: email);
+    state = state.copyWith(isLoading: false);
   }
 
   void logout() {
