@@ -11,6 +11,7 @@ import '../../features/auth/presentation/forgot_password_placeholder_screen.dart
 import '../../features/auth/presentation/login_placeholder_screen.dart';
 import '../../features/auth/presentation/register_placeholder_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
+import '../../features/employee/attendance/presentation/attendance_location_validation_screen.dart';
 import '../../features/employee/presentation/employee_home_screen.dart';
 import '../../features/employee/presentation/employee_placeholder_tab.dart';
 import '../../features/employee/presentation/employee_shell.dart';
@@ -90,6 +91,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: RouteNames.forgotPasswordName,
         pageBuilder: (context, state) =>
             _noTransitionPage(state, const ForgotPasswordPlaceholderScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.employeeAttendanceLocation,
+        name: RouteNames.employeeAttendanceLocationName,
+        pageBuilder: (context, state) => _noTransitionPage(
+          state,
+          const AttendanceLocationValidationScreen(),
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

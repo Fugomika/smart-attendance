@@ -6,6 +6,8 @@ class RouteNames {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String employeeHome = '/employee/home';
+  static const String employeeAttendanceLocation =
+      '/employee/attendance/location';
   static const String employeeHistory = '/employee/history';
   static const String employeeProfile = '/employee/profile';
   static const String adminDashboard = '/admin/dashboard';
@@ -18,6 +20,8 @@ class RouteNames {
   static const String registerName = 'register';
   static const String forgotPasswordName = 'forgot-password';
   static const String employeeHomeName = 'employee-home';
+  static const String employeeAttendanceLocationName =
+      'employee-attendance-location';
   static const String employeeHistoryName = 'employee-history';
   static const String employeeProfileName = 'employee-profile';
   static const String adminDashboardName = 'admin-dashboard';

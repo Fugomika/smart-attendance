@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_radius.dart';
@@ -76,9 +75,7 @@ class AppTextField extends StatelessWidget {
         prefixIcon: prefixIcon == null
             ? null
             : Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: Icon(
                   prefixIcon,
                   color: AppColors.textSecondary,
