@@ -71,12 +71,20 @@ class OfficeSettingController extends Notifier<OfficeSettingState?> {
       return;
     }
 
-    state = current.copyWith(
-      name: name.trim(),
-      latitude: latitude,
-      longitude: longitude,
-      radiusMeters: radiusMeters,
-    );
+    final saved = ref
+        .read(officeStoreProvider.notifier)
+        .updatePrimaryOffice(
+          name: name,
+          latitude: latitude,
+          longitude: longitude,
+          radiusMeters: radiusMeters,
+        );
+
+    if (saved == null) {
+      return;
+    }
+
+    state = OfficeSettingState.fromOffice(saved);
   }
 }
 

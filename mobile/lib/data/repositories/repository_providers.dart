@@ -4,7 +4,9 @@ import 'admin_repository.dart';
 import 'attendance_repository.dart';
 import 'auth_repository.dart';
 import '../dummy/dummy_attendances.dart';
+import '../dummy/dummy_offices.dart';
 import '../models/attendance_model.dart';
+import '../models/office_model.dart';
 import 'office_repository.dart';
 import 'user_repository.dart';
 
@@ -95,8 +97,41 @@ final attendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
   return AttendanceRepository(ref.watch(attendanceStoreProvider));
 });
 
+class OfficeStoreController extends Notifier<List<OfficeModel>> {
+  @override
+  List<OfficeModel> build() => List<OfficeModel>.of(dummyOffices);
+
+  OfficeModel? updatePrimaryOffice({
+    required String name,
+    required double latitude,
+    required double longitude,
+    required double radiusMeters,
+  }) {
+    if (state.isEmpty) {
+      return null;
+    }
+
+    final current = state.first;
+    final updated = OfficeModel(
+      id: current.id,
+      name: name.trim(),
+      latitude: latitude,
+      longitude: longitude,
+      radiusMeters: radiusMeters,
+    );
+
+    state = [updated, ...state.skip(1)];
+    return updated;
+  }
+}
+
+final officeStoreProvider =
+    NotifierProvider<OfficeStoreController, List<OfficeModel>>(
+      OfficeStoreController.new,
+    );
+
 final officeRepositoryProvider = Provider<OfficeRepository>((ref) {
-  return const OfficeRepository();
+  return OfficeRepository(ref.watch(officeStoreProvider));
 });
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
