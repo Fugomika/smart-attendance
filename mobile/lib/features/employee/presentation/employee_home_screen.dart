@@ -9,11 +9,15 @@ import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/enums/attendance_status.dart';
+import '../../../core/utils/app_date_time_formatter.dart';
 import '../../../data/models/attendance_model.dart';
 import '../../../shared/utils/app_snack_bar.dart';
+import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
+import '../../../shared/widgets/attendance_info_row.dart';
 import '../../../shared/widgets/profile_avatar_view.dart';
+import '../attendance/providers/clock_out_controller.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/profile_controller.dart';
 import '../providers/employee_providers.dart';
@@ -42,14 +46,18 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
     final office = ref.watch(todayAttendanceOfficeProvider);
     final displayName = profile?.name ?? user?.name ?? 'Karyawan';
     final displayPhotoPath = profile?.photoPath ?? user?.photoId;
+    final liveAttendanceDate = DateTime.now();
+    final previewAttendanceDate =
+        _debugAttendancePreview == _DebugAttendancePreview.live
+        ? liveAttendanceDate
+        : EmployeeHomeScreen._fallbackAttendanceDate;
     final effectiveAttendance = _debugAttendancePreview.resolve(
       liveAttendance: attendance,
-      date: EmployeeHomeScreen._fallbackAttendanceDate,
+      date: previewAttendanceDate,
       userId: user?.id ?? 'debug-user',
     );
     final attendanceDate =
-        effectiveAttendance?.attendanceDate ??
-        EmployeeHomeScreen._fallbackAttendanceDate;
+        effectiveAttendance?.attendanceDate ?? previewAttendanceDate;
     final viewData = EmployeeHomeStatusMapper.fromAttendance(
       effectiveAttendance,
       locationLabel: _debugLocationLabel(office?.name),
@@ -111,7 +119,8 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
                   const SizedBox(height: AppSpacing.lg), //main
                   _AttendanceCtaCard(
                     viewData: viewData,
-                    onPressed: () => _handleCta(context, viewData.cta!),
+                    onPressed: () =>
+                        _handleCta(context, viewData.cta!, effectiveAttendance),
                   ),
                 ],
                 const SizedBox(height: AppSpacing.lg), //main
@@ -124,13 +133,74 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
     );
   }
 
-  static void _handleCta(BuildContext context, EmployeeHomeCta cta) {
+  void _handleCta(
+    BuildContext context,
+    EmployeeHomeCta cta,
+    AttendanceModel? attendance,
+  ) {
     if (cta == EmployeeHomeCta.clockIn) {
       context.go(RouteNames.employeeAttendanceLocation);
       return;
     }
 
-    AppSnackBar.info(context, 'Flow absen pulang akan dibuat di Batch 5.');
+    if (attendance == null || attendance.status != AttendanceStatus.checkedIn) {
+      AppSnackBar.error(
+        context,
+        'Presensi hari ini belum siap untuk absen pulang.',
+      );
+      return;
+    }
+
+    _showClockOutConfirmation(context, attendance);
+  }
+
+  void _showClockOutConfirmation(
+    BuildContext context,
+    AttendanceModel attendance,
+  ) {
+    final previewClockOutTime = DateTime.now();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return _ClockOutConfirmationSheet(
+          attendance: attendance,
+          previewClockOutTime: previewClockOutTime,
+          onCancel: () => Navigator.of(sheetContext).pop(),
+          onConfirm: () async {
+            final submitted = await ref
+                .read(clockOutControllerProvider.notifier)
+                .submit(attendance);
+
+            if (!context.mounted) {
+              return;
+            }
+
+            if (submitted == null) {
+              final message =
+                  ref.read(clockOutControllerProvider).message ??
+                  'Absen pulang gagal disimpan. Coba lagi.';
+              AppSnackBar.error(context, message);
+              return;
+            }
+
+            if (!sheetContext.mounted) {
+              return;
+            }
+
+            Navigator.of(sheetContext).pop();
+            AppSnackBar.success(
+              context,
+              submitted.isOutside
+                  ? 'Absen pulang tersimpan dan menunggu validasi admin.'
+                  : 'Absen pulang berhasil disimpan.',
+            );
+          },
+        );
+      },
+    );
   }
 
   static String _formatDate(DateTime date) {
@@ -757,6 +827,259 @@ class _TimeTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ClockOutConfirmationSheet extends ConsumerWidget {
+  const _ClockOutConfirmationSheet({
+    required this.attendance,
+    required this.previewClockOutTime,
+    required this.onCancel,
+    required this.onConfirm,
+  });
+
+  final AttendanceModel attendance;
+  final DateTime previewClockOutTime;
+  final VoidCallback onCancel;
+  final Future<void> Function() onConfirm;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final submitState = ref.watch(clockOutControllerProvider);
+    final reason = attendance.outsideReason?.trim();
+    final hasReason = reason != null && reason.isNotEmpty;
+    final isOutside = attendance.isOutside;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.md,
+        bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.md,
+      ),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.86,
+          ),
+          child: Material(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.large),
+            clipBehavior: Clip.antiAlias,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: isOutside
+                              ? AppColors.warningLight
+                              : AppColors.softBlue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isOutside
+                              ? Icons.pending_actions_rounded
+                              : Icons.verified_rounded,
+                          color: isOutside
+                              ? AppColors.warningDark
+                              : AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Konfirmasi Absen Pulang',
+                              style: AppTextStyles.h2.copyWith(fontSize: 20),
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              isOutside
+                                  ? 'Presensi hari ini tercatat dari luar area kantor. Setelah dikonfirmasi, data akan dikirim untuk validasi admin.'
+                                  : 'Periksa kembali ringkasan presensi hari ini sebelum mengakhiri sesi kerja.',
+                              style: AppTextStyles.body.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Ringkasan Presensi',
+                    style: AppTextStyles.bodyMedium.copyWith(fontSize: 16),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(AppRadius.large),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      children: [
+                        AttendanceInfoRow(
+                          icon: Icons.login_rounded,
+                          label: 'Jam Masuk',
+                          value: AppDateTimeFormatter.time(
+                            attendance.clockInTime,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        AttendanceInfoRow(
+                          icon: Icons.logout_rounded,
+                          label: 'Jam Pulang',
+                          value: AppDateTimeFormatter.time(previewClockOutTime),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        AttendanceInfoRow(
+                          icon: isOutside
+                              ? Icons.hourglass_top_rounded
+                              : Icons.check_circle_outline_rounded,
+                          label: 'Status Akhir',
+                          value: isOutside ? 'Menunggu Validasi' : 'Selesai',
+                          valueColor: isOutside
+                              ? AppColors.warningDark
+                              : AppColors.success,
+                        ),
+                        if (hasReason) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          _ClockOutReasonRow(reason: reason),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  _ClockOutActions(
+                    isSubmitting: submitState.isSubmitting,
+                    onCancel: onCancel,
+                    onConfirm: onConfirm,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ClockOutReasonRow extends StatelessWidget {
+  const _ClockOutReasonRow({required this.reason});
+
+  final String reason;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.edit_note_rounded, size: 20, color: AppColors.primary),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Alasan',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                reason,
+                style: AppTextStyles.bodyMedium,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ClockOutActions extends StatelessWidget {
+  const _ClockOutActions({
+    required this.isSubmitting,
+    required this.onCancel,
+    required this.onConfirm,
+  });
+
+  final bool isSubmitting;
+  final VoidCallback onCancel;
+  final Future<void> Function() onConfirm;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 340;
+        final cancelButton = AppButton(
+          label: 'Batal',
+          onPressed: isSubmitting ? null : onCancel,
+          variant: AppButtonVariant.secondary,
+          size: AppButtonSize.medium,
+        );
+        final confirmButton = AppButton(
+          label: isSubmitting ? 'Menyimpan...' : 'Konfirmasi',
+          icon: Icons.check_rounded,
+          onPressed: isSubmitting
+              ? null
+              : () {
+                  onConfirm();
+                },
+          size: AppButtonSize.medium,
+        );
+
+        if (isCompact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              confirmButton,
+              const SizedBox(height: AppSpacing.sm),
+              cancelButton,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: cancelButton),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(child: confirmButton),
+          ],
+        );
+      },
     );
   }
 }

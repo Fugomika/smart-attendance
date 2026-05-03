@@ -8,7 +8,10 @@ class RouteNames {
   static const String employeeHome = '/employee/home';
   static const String employeeAttendanceLocation =
       '/employee/attendance/location';
+  static const String employeeAttendanceSelfie = '/employee/attendance/selfie';
   static const String employeeHistory = '/employee/history';
+  static const String employeeAttendanceDetail =
+      '/employee/attendance/detail/:attendanceId';
   static const String employeeProfile = '/employee/profile';
   static const String employeeProfileEdit = '/employee/profile/edit';
   static const String employeeProfileChangePassword =
@@ -30,7 +33,11 @@ class RouteNames {
   static const String employeeHomeName = 'employee-home';
   static const String employeeAttendanceLocationName =
       'employee-attendance-location';
+  static const String employeeAttendanceSelfieName =
+      'employee-attendance-selfie';
   static const String employeeHistoryName = 'employee-history';
+  static const String employeeAttendanceDetailName =
+      'employee-attendance-detail';
   static const String employeeProfileName = 'employee-profile';
   static const String employeeProfileEditName = 'employee-profile-edit';
   static const String employeeProfileChangePasswordName =
@@ -51,4 +58,8 @@ class RouteNames {
     register,
     forgotPassword,
   ];
+
+  static String employeeAttendanceDetailPath(String attendanceId) {
+    return '/employee/attendance/detail/$attendanceId';
+  }
 }

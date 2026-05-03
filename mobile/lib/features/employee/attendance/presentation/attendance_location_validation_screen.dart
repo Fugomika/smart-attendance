@@ -213,12 +213,7 @@ class _AttendanceLocationValidationScreenState
     BuildContext context,
     AttendanceLocationResult result,
   ) {
-    AppSnackBar.info(
-      context,
-      result.isOutside
-          ? 'Data lokasi dan alasan sudah siap. Selfie akan dibuat pada tahap berikutnya.'
-          : 'Data lokasi sudah siap. Selfie akan dibuat pada tahap berikutnya.',
-    );
+    context.go(RouteNames.employeeAttendanceSelfie, extra: result);
   }
 
   Future<void> _showOutsideReasonSheet(
@@ -294,64 +289,67 @@ class _OutsideReasonSheetState extends State<_OutsideReasonSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.lg,
-          AppSpacing.lg,
-          AppSpacing.lg + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Anda di luar area kantor',
-              style: AppTextStyles.h3.copyWith(fontSize: 20),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Jarak Anda dari kantor saat ini sekitar ${widget.distanceText}.',
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                height: 1.4,
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Anda di luar area kantor',
+                style: AppTextStyles.h3.copyWith(fontSize: 20),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppFormField(
-              label: 'Alasan',
-              controller: _reasonController,
-              hint: 'Contoh: kunjungan klien',
-              errorText: _errorText,
-              isRequired: true,
-              minLines: 4,
-              maxLines: 5,
-              maxLength: _AttendanceLocationValidationScreenState
-                  ._outsideReasonMaxLength,
-              showCounter: true,
-              keyboardType: TextInputType.multiline,
-              textInputAction: TextInputAction.newline,
-              onChanged: (_) {
-                if (_errorText != null) {
-                  setState(() {
-                    _errorText = null;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppButton(label: 'Lanjutkan', onPressed: _submit),
-            const SizedBox(height: AppSpacing.sm),
-            AppButton(
-              label: 'Cek ulang lokasi',
-              variant: AppButtonVariant.secondary,
-              onPressed: () {
-                Navigator.of(context).pop();
-                widget.onRetry();
-              },
-            ),
-          ],
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Jarak Anda dari kantor saat ini sekitar ${widget.distanceText}.',
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AppFormField(
+                label: 'Alasan',
+                controller: _reasonController,
+                hint: 'Contoh: kunjungan klien',
+                errorText: _errorText,
+                isRequired: true,
+                minLines: 4,
+                maxLines: 5,
+                maxLength: _AttendanceLocationValidationScreenState
+                    ._outsideReasonMaxLength,
+                showCounter: true,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.newline,
+                onChanged: (_) {
+                  if (_errorText != null) {
+                    setState(() {
+                      _errorText = null;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AppButton(label: 'Lanjutkan', onPressed: _submit),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: 'Cek ulang lokasi',
+                variant: AppButtonVariant.secondary,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  widget.onRetry();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

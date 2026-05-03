@@ -12,8 +12,11 @@ import '../../features/auth/presentation/login_placeholder_screen.dart';
 import '../../features/auth/presentation/register_placeholder_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/employee/attendance/presentation/attendance_location_validation_screen.dart';
+import '../../features/employee/attendance/presentation/attendance_selfie_screen.dart';
+import '../../features/employee/attendance/models/attendance_location_result.dart';
+import '../../features/employee/attendance/presentation/employee_attendance_detail_screen.dart';
+import '../../features/employee/attendance/presentation/employee_attendance_history_screen.dart';
 import '../../features/employee/presentation/employee_home_screen.dart';
-import '../../features/employee/presentation/employee_placeholder_tab.dart';
 import '../../features/employee/presentation/employee_shell.dart';
 import '../../features/profile/presentation/change_password_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
@@ -104,6 +107,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: RouteNames.employeeAttendanceSelfie,
+        name: RouteNames.employeeAttendanceSelfieName,
+        pageBuilder: (context, state) {
+          final extra = state.extra;
+          return _noTransitionPage(
+            state,
+            AttendanceSelfieScreen(
+              locationResult: extra is AttendanceLocationResult ? extra : null,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.employeeAttendanceDetail,
+        name: RouteNames.employeeAttendanceDetailName,
+        pageBuilder: (context, state) {
+          final attendanceId = state.pathParameters['attendanceId'] ?? '';
+          return _noTransitionPage(
+            state,
+            EmployeeAttendanceDetailScreen(attendanceId: attendanceId),
+          );
+        },
+      ),
+      GoRoute(
         path: RouteNames.employeeProfileEdit,
         name: RouteNames.employeeProfileEditName,
         pageBuilder: (context, state) => _noTransitionPage(
@@ -163,10 +190,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: RouteNames.employeeHistoryName,
                 pageBuilder: (context, state) => _noTransitionPage(
                   state,
-                  const EmployeePlaceholderTab(
-                    title: 'Riwayat',
-                    icon: Icons.work_history_rounded,
-                  ),
+                  const EmployeeAttendanceHistoryScreen(),
                 ),
               ),
             ],
