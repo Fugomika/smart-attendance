@@ -14,7 +14,9 @@ import '../../../../data/models/office_model.dart';
 import '../../../../shared/utils/app_snack_bar.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/app_form_field.dart';
 import '../../../../shared/widgets/app_system_overlay.dart';
+import '../models/attendance_location_result.dart';
 import '../models/location_validation_state.dart';
 import '../providers/location_validation_controller.dart';
 
@@ -28,6 +30,8 @@ class AttendanceLocationValidationScreen extends ConsumerStatefulWidget {
 
 class _AttendanceLocationValidationScreenState
     extends ConsumerState<AttendanceLocationValidationScreen> {
+  static const int _outsideReasonMaxLength = 500;
+
   final MapController _mapController = MapController();
   LatLng? _lastAutoFitUserLocation;
 
@@ -161,22 +165,209 @@ class _AttendanceLocationValidationScreenState
     });
   }
 
-  static void _handleContinue(
-    BuildContext context,
-    LocationValidationState state,
-  ) {
+  void _handleContinue(BuildContext context, LocationValidationState state) {
     if (state.status == LocationValidationStatus.insideRadius) {
-      AppSnackBar.info(
-        context,
-        'Fitur selfie presensi akan tersedia pada tahap berikutnya.',
-      );
+      final result = _resultFromState(state, isOutside: false);
+      if (result == null) {
+        AppSnackBar.error(
+          context,
+          'Data lokasi belum lengkap. Coba ulangi validasi lokasi.',
+        );
+        return;
+      }
+
+      _handlePreparedResult(context, result);
       return;
     }
 
-    AppSnackBar.warning(
-      context,
-      'Fitur alasan presensi dari luar kantor akan tersedia pada tahap berikutnya.',
+    if (state.status == LocationValidationStatus.outsideRadius) {
+      _showOutsideReasonSheet(context, state);
+      return;
+    }
+
+    AppSnackBar.warning(context, 'Validasi lokasi belum siap.');
+  }
+
+  AttendanceLocationResult? _resultFromState(
+    LocationValidationState state, {
+    required bool isOutside,
+    String? outsideReason,
+  }) {
+    final office = state.office;
+    final userLocation = state.userLocation;
+    final distanceMeters = state.distanceMeters;
+    if (office == null || userLocation == null || distanceMeters == null) {
+      return null;
+    }
+
+    return AttendanceLocationResult(
+      office: office,
+      userLocation: userLocation,
+      distanceMeters: distanceMeters,
+      isOutside: isOutside,
+      outsideReason: outsideReason,
     );
+  }
+
+  void _handlePreparedResult(
+    BuildContext context,
+    AttendanceLocationResult result,
+  ) {
+    AppSnackBar.info(
+      context,
+      result.isOutside
+          ? 'Data lokasi dan alasan sudah siap. Selfie akan dibuat pada tahap berikutnya.'
+          : 'Data lokasi sudah siap. Selfie akan dibuat pada tahap berikutnya.',
+    );
+  }
+
+  Future<void> _showOutsideReasonSheet(
+    BuildContext context,
+    LocationValidationState state,
+  ) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.sheet),
+        ),
+      ),
+      builder: (sheetContext) {
+        return _OutsideReasonSheet(
+          distanceText: _OfficeInfoGrid.formatDistance(state.distanceMeters),
+          onSubmit: (reason) {
+            final result = _resultFromState(
+              state,
+              isOutside: true,
+              outsideReason: reason,
+            );
+            if (result == null) {
+              if (!mounted) {
+                return;
+              }
+
+              AppSnackBar.error(
+                context,
+                'Data lokasi belum lengkap. Coba ulangi validasi lokasi.',
+              );
+              return;
+            }
+
+            _handlePreparedResult(context, result);
+          },
+          onRetry: () {
+            ref.read(locationValidationControllerProvider.notifier).refresh();
+          },
+        );
+      },
+    );
+  }
+}
+
+class _OutsideReasonSheet extends StatefulWidget {
+  const _OutsideReasonSheet({
+    required this.distanceText,
+    required this.onSubmit,
+    required this.onRetry,
+  });
+
+  final String distanceText;
+  final ValueChanged<String> onSubmit;
+  final VoidCallback onRetry;
+
+  @override
+  State<_OutsideReasonSheet> createState() => _OutsideReasonSheetState();
+}
+
+class _OutsideReasonSheetState extends State<_OutsideReasonSheet> {
+  final TextEditingController _reasonController = TextEditingController();
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Anda di luar area kantor',
+              style: AppTextStyles.h3.copyWith(fontSize: 20),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Jarak Anda dari kantor saat ini sekitar ${widget.distanceText}.',
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppFormField(
+              label: 'Alasan',
+              controller: _reasonController,
+              hint: 'Contoh: kunjungan klien',
+              errorText: _errorText,
+              isRequired: true,
+              minLines: 4,
+              maxLines: 5,
+              maxLength: _AttendanceLocationValidationScreenState
+                  ._outsideReasonMaxLength,
+              showCounter: true,
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
+              onChanged: (_) {
+                if (_errorText != null) {
+                  setState(() {
+                    _errorText = null;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppButton(label: 'Lanjutkan', onPressed: _submit),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: 'Cek ulang lokasi',
+              variant: AppButtonVariant.secondary,
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.onRetry();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _submit() {
+    final reason = _reasonController.text.trim();
+    if (reason.isEmpty) {
+      setState(() {
+        _errorText = 'Alasan wajib diisi.';
+      });
+      return;
+    }
+
+    Navigator.of(context).pop();
+    widget.onSubmit(reason);
   }
 }
 
@@ -513,7 +704,7 @@ class _OfficeInfoGrid extends StatelessWidget {
             Expanded(
               child: _InfoTile(
                 label: 'Jarak Anda',
-                value: _formatDistance(state.distanceMeters),
+                value: formatDistance(state.distanceMeters),
               ),
             ),
           ],
@@ -522,7 +713,7 @@ class _OfficeInfoGrid extends StatelessWidget {
     );
   }
 
-  static String _formatDistance(double? meters) {
+  static String formatDistance(double? meters) {
     if (meters == null) {
       return '-';
     }

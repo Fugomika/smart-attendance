@@ -10,10 +10,18 @@ class RouteNames {
       '/employee/attendance/location';
   static const String employeeHistory = '/employee/history';
   static const String employeeProfile = '/employee/profile';
+  static const String employeeProfileEdit = '/employee/profile/edit';
+  static const String employeeProfileChangePassword =
+      '/employee/profile/change-password';
   static const String adminDashboard = '/admin/dashboard';
   static const String adminEmployees = '/admin/employees';
   static const String adminReports = '/admin/reports';
   static const String adminProfile = '/admin/profile';
+  static const String adminProfileEdit = '/admin/profile/edit';
+  static const String adminProfileChangePassword =
+      '/admin/profile/change-password';
+  static const String adminProfileOfficeLocation =
+      '/admin/profile/office-location';
 
   static const String welcomeName = 'welcome';
   static const String loginName = 'login';
@@ -24,10 +32,18 @@ class RouteNames {
       'employee-attendance-location';
   static const String employeeHistoryName = 'employee-history';
   static const String employeeProfileName = 'employee-profile';
+  static const String employeeProfileEditName = 'employee-profile-edit';
+  static const String employeeProfileChangePasswordName =
+      'employee-profile-change-password';
   static const String adminDashboardName = 'admin-dashboard';
   static const String adminEmployeesName = 'admin-employees';
   static const String adminReportsName = 'admin-reports';
   static const String adminProfileName = 'admin-profile';
+  static const String adminProfileEditName = 'admin-profile-edit';
+  static const String adminProfileChangePasswordName =
+      'admin-profile-change-password';
+  static const String adminProfileOfficeLocationName =
+      'admin-profile-office-location';
 
   static const List<String> authRoutes = [
     welcome,

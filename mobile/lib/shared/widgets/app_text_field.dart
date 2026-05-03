@@ -21,6 +21,10 @@ class AppTextField extends StatelessWidget {
     this.enableSuggestions = false,
     this.textInputAction,
     this.onSubmitted,
+    this.minLines,
+    this.maxLines,
+    this.maxLength,
+    this.showCounter = true,
     super.key,
   });
 
@@ -38,6 +42,10 @@ class AppTextField extends StatelessWidget {
   final bool enableSuggestions;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
+  final bool showCounter;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +55,9 @@ class AppTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      minLines: obscureText ? null : minLines,
+      maxLines: obscureText ? 1 : maxLines ?? 1,
+      maxLength: maxLength,
       keyboardType: keyboardType,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
@@ -69,6 +80,10 @@ class AppTextField extends StatelessWidget {
           fontSize: 16,
           fontWeight: FontWeight.w400,
         ),
+        counterStyle: AppTextStyles.caption.copyWith(
+          color: AppColors.textMuted,
+        ),
+        counterText: showCounter ? null : '',
         errorText: errorText,
         filled: true,
         fillColor: isSearch ? AppColors.canvasNeutral : AppColors.surface,

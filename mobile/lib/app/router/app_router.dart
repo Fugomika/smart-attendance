@@ -15,8 +15,11 @@ import '../../features/employee/attendance/presentation/attendance_location_vali
 import '../../features/employee/presentation/employee_home_screen.dart';
 import '../../features/employee/presentation/employee_placeholder_tab.dart';
 import '../../features/employee/presentation/employee_shell.dart';
+import '../../features/profile/presentation/change_password_screen.dart';
+import '../../features/profile/presentation/edit_profile_screen.dart';
+import '../../features/profile/presentation/office_location_setting_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/shared/providers/app_mode_provider.dart';
-import '../../shared/utils/app_snack_bar.dart';
 import 'route_names.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -100,6 +103,44 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           const AttendanceLocationValidationScreen(),
         ),
       ),
+      GoRoute(
+        path: RouteNames.employeeProfileEdit,
+        name: RouteNames.employeeProfileEditName,
+        pageBuilder: (context, state) => _noTransitionPage(
+          state,
+          const EditProfileScreen(isAdminProfile: false),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.employeeProfileChangePassword,
+        name: RouteNames.employeeProfileChangePasswordName,
+        pageBuilder: (context, state) => _noTransitionPage(
+          state,
+          const ChangePasswordScreen(isAdminProfile: false),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.adminProfileEdit,
+        name: RouteNames.adminProfileEditName,
+        pageBuilder: (context, state) => _noTransitionPage(
+          state,
+          const EditProfileScreen(isAdminProfile: true),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.adminProfileChangePassword,
+        name: RouteNames.adminProfileChangePasswordName,
+        pageBuilder: (context, state) => _noTransitionPage(
+          state,
+          const ChangePasswordScreen(isAdminProfile: true),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.adminProfileOfficeLocation,
+        name: RouteNames.adminProfileOfficeLocationName,
+        pageBuilder: (context, state) =>
+            _noTransitionPage(state, const OfficeLocationSettingScreen()),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return EmployeeShell(navigationShell: navigationShell);
@@ -137,33 +178,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: RouteNames.employeeProfileName,
                 pageBuilder: (context, state) => _noTransitionPage(
                   state,
-                  EmployeePlaceholderTab(
-                    title: 'Profil',
-                    icon: Icons.person_rounded,
-                    actionLabel:
-                        ref.read(authControllerProvider).user?.role ==
-                            UserRole.admin
-                        ? 'Kembali ke Mode Admin'
-                        : null,
-                    onAction:
-                        ref.read(authControllerProvider).user?.role ==
-                            UserRole.admin
-                        ? () {
-                            ref
-                                .read(appModeProvider.notifier)
-                                .enterAdminMode(role: UserRole.admin);
-                            context.go(RouteNames.adminDashboard);
-                            AppSnackBar.info(
-                              context,
-                              'Berhasil kembali ke Mode Admin.',
-                            );
-                          }
-                        : null,
-                    onLogout: () {
-                      ref.read(authControllerProvider.notifier).logout();
-                      context.go(RouteNames.login);
-                    },
-                  ),
+                  const ProfileScreen(isAdminProfile: false),
                 ),
               ),
             ],
@@ -227,23 +242,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: RouteNames.adminProfileName,
                 pageBuilder: (context, state) => _noTransitionPage(
                   state,
-                  AdminPlaceholderTab(
-                    title: 'Profil',
-                    icon: Icons.person_rounded,
-                    actionLabel: 'Beralih ke Mode Karyawan',
-                    onAction: () {
-                      ref.read(appModeProvider.notifier).enterEmployeeMode();
-                      context.go(RouteNames.employeeHome);
-                      AppSnackBar.info(
-                        context,
-                        'Berhasil masuk ke Mode Karyawan.',
-                      );
-                    },
-                    onLogout: () {
-                      ref.read(authControllerProvider.notifier).logout();
-                      context.go(RouteNames.login);
-                    },
-                  ),
+                  const ProfileScreen(isAdminProfile: true),
                 ),
               ),
             ],

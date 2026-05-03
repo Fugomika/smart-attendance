@@ -19,6 +19,10 @@ class AppFormField extends StatelessWidget {
     this.textInputAction,
     this.onChanged,
     this.onSubmitted,
+    this.minLines,
+    this.maxLines,
+    this.maxLength,
+    this.showCounter = true,
     this.autofillHints,
     this.autocorrect = false,
     this.enableSuggestions = false,
@@ -38,6 +42,10 @@ class AppFormField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
+  final bool showCounter;
   final Iterable<String>? autofillHints;
   final bool autocorrect;
   final bool enableSuggestions;
@@ -83,6 +91,10 @@ class AppFormField extends StatelessWidget {
           textInputAction: textInputAction,
           onChanged: onChanged,
           onSubmitted: onSubmitted,
+          minLines: minLines,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          showCounter: showCounter,
           autofillHints: autofillHints,
           autocorrect: autocorrect,
           enableSuggestions: enableSuggestions,

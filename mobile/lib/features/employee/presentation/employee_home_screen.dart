@@ -13,7 +13,9 @@ import '../../../data/models/attendance_model.dart';
 import '../../../shared/utils/app_snack_bar.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
+import '../../../shared/widgets/profile_avatar_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/providers/profile_controller.dart';
 import '../providers/employee_providers.dart';
 import 'employee_home_status_view_data.dart';
 
@@ -35,8 +37,11 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    final profile = ref.watch(profileControllerProvider);
     final attendance = ref.watch(todayAttendanceProvider);
     final office = ref.watch(todayAttendanceOfficeProvider);
+    final displayName = profile?.name ?? user?.name ?? 'Karyawan';
+    final displayPhotoPath = profile?.photoPath ?? user?.photoId;
     final effectiveAttendance = _debugAttendancePreview.resolve(
       liveAttendance: attendance,
       date: EmployeeHomeScreen._fallbackAttendanceDate,
@@ -67,7 +72,8 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HomeHeader(
-                  name: user?.name ?? 'Karyawan',
+                  name: displayName,
+                  photoPath: displayPhotoPath,
                   greeting: _greetingFor(
                     attendanceDate,
                     hour: _debugGreetingPreview.hour,
@@ -298,17 +304,22 @@ enum _DebugGreetingPreview {
 }
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({required this.name, required this.greeting});
+  const _HomeHeader({
+    required this.name,
+    required this.greeting,
+    this.photoPath,
+  });
 
   final String name;
   final String greeting;
+  final String? photoPath;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _InitialAvatar(name: name),
+        ProfileAvatarView(name: name, photoPath: photoPath, size: 56),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
@@ -747,48 +758,5 @@ class _TimeTile extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _InitialAvatar extends StatelessWidget {
-  const _InitialAvatar({required this.name});
-
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      width: 56,
-      decoration: BoxDecoration(
-        color: AppColors.border,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        _initials,
-        style: AppTextStyles.h3.copyWith(
-          color: AppColors.textSecondary,
-          fontSize: 21,
-        ),
-      ),
-    );
-  }
-
-  String get _initials {
-    final parts = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((part) => part.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) {
-      return '?';
-    }
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
-        .toUpperCase();
   }
 }
