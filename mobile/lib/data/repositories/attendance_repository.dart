@@ -55,7 +55,7 @@ class AttendanceRepository {
     return AttendanceModel(
       id:
           existing?.id ??
-          'attendance-${userId}-${date.year}${date.month}${date.day}',
+          'attendance-$userId-${date.year}${date.month}${date.day}',
       userId: userId,
       officeId: officeId,
       attendanceDate: date,

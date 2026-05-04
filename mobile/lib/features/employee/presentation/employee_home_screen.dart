@@ -139,7 +139,7 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
     AttendanceModel? attendance,
   ) {
     if (cta == EmployeeHomeCta.clockIn) {
-      context.go(RouteNames.employeeAttendanceLocation);
+      context.push(RouteNames.employeeAttendanceLocation);
       return;
     }
 

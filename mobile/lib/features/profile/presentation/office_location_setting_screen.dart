@@ -231,6 +231,11 @@ class _OfficeLocationSettingScreenState
   }
 
   void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
     context.go(RouteNames.adminProfile);
   }
 }

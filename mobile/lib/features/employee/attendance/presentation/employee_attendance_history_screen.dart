@@ -81,7 +81,7 @@ class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
                               attendance: attendance,
                               officeName: office?.name ?? '-',
                               onTap: () {
-                                context.go(
+                                context.push(
                                   RouteNames.employeeAttendanceDetailPath(
                                     attendance.id,
                                   ),

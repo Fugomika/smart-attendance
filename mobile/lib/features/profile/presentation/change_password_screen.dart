@@ -197,6 +197,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
     context.go(
       widget.isAdminProfile
           ? RouteNames.adminProfile

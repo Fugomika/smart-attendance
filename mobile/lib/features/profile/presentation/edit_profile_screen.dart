@@ -174,6 +174,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
     context.go(
       widget.isAdminProfile
           ? RouteNames.adminProfile

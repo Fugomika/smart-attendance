@@ -61,7 +61,7 @@ class ProfileScreen extends ConsumerWidget {
                               _ProfileCard(
                                 profile: profile,
                                 onEdit: () {
-                                  context.go(
+                                  context.push(
                                     isAdminProfile
                                         ? RouteNames.adminProfileEdit
                                         : RouteNames.employeeProfileEdit,
@@ -75,7 +75,7 @@ class ProfileScreen extends ConsumerWidget {
                                     icon: Icons.lock_outline_rounded,
                                     label: 'Ubah Password',
                                     onTap: () {
-                                      context.go(
+                                      context.push(
                                         isAdminProfile
                                             ? RouteNames
                                                   .adminProfileChangePassword
@@ -90,7 +90,7 @@ class ProfileScreen extends ConsumerWidget {
                                       icon: Icons.business_rounded,
                                       label: 'Setting Lokasi Kantor',
                                       onTap: () {
-                                        context.go(
+                                        context.push(
                                           RouteNames.adminProfileOfficeLocation,
                                         );
                                       },

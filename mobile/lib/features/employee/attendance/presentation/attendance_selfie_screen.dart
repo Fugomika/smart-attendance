@@ -68,7 +68,7 @@ class _AttendanceSelfieScreenState
           title: Text('Absen Masuk', style: AppTextStyles.h3),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            onPressed: () => context.go(RouteNames.employeeAttendanceLocation),
+            onPressed: () => _goBack(context),
           ),
         ),
         body: SafeArea(
@@ -118,7 +118,7 @@ class _AttendanceSelfieScreenState
     final attendance = await ref
         .read(clockInControllerProvider.notifier)
         .submit(result);
-    if (!mounted) {
+    if (!context.mounted) {
       return;
     }
 
@@ -132,6 +132,15 @@ class _AttendanceSelfieScreenState
 
     AppSnackBar.success(context, 'Absen masuk berhasil disimpan.');
     context.go(RouteNames.employeeHome);
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go(RouteNames.employeeAttendanceLocation);
   }
 }
 

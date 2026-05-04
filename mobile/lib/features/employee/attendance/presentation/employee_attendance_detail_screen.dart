@@ -44,7 +44,7 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
           scrolledUnderElevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => context.go(RouteNames.employeeHistory),
+            onPressed: () => _goBack(context),
           ),
           title: Text('Detail Presensi', style: AppTextStyles.h2),
         ),
@@ -86,6 +86,15 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go(RouteNames.employeeHistory);
   }
 }
 

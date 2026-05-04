@@ -213,7 +213,7 @@ class _AttendanceLocationValidationScreenState
     BuildContext context,
     AttendanceLocationResult result,
   ) {
-    context.go(RouteNames.employeeAttendanceSelfie, extra: result);
+    context.push(RouteNames.employeeAttendanceSelfie, extra: result);
   }
 
   Future<void> _showOutsideReasonSheet(
