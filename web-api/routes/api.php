@@ -1,15 +1,33 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FileController;
+use App\Http\Controllers\OfficeController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::prefix('v1')->group(function () {
+    Route::post('/auth/mobile/login', [AuthController::class, 'mobileLogin']);
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        Route::patch('/users/{id}', [UserController::class, 'update']);
+        Route::patch('/users/{id}/password', [UserController::class, 'updatePassword']);
+
+        Route::post('/files', [FileController::class, 'upload']);
+        Route::get('/files/{id}', [FileController::class, 'show']);
+
+        Route::get('/offices/active', [OfficeController::class, 'active']);
+
+        Route::get('/attendances/today', [AttendanceController::class, 'today']);
+        Route::get('/attendances/history', [AttendanceController::class, 'history']);
+        Route::post('/attendances/clock-in', [AttendanceController::class, 'clockIn']);
+        Route::post('/attendances/clock-out', [AttendanceController::class, 'clockOut']);
+        Route::get('/attendances/{id}', [AttendanceController::class, 'show']);
+    });
 });
-
-// Additional protected resources can be added below

@@ -15,6 +15,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
+php artisan storage:link
 ```
 
 Jalankan dev server:
@@ -48,6 +49,28 @@ Panel admin (`/admin`) menggunakan Filament v5 dan mencakup:
 | **Hari Libur** | CRUD hari libur nasional & perusahaan |
 | **Absensi** | Validasi absensi dari mobile (ubah status) |
 | **Log Absensi** | Riwayat perubahan status (read-only) |
+
+## API Mobile (Phase 1)
+
+Base path: `/api/v1`. Auth menggunakan Sanctum Bearer Token (7 hari).
+
+| # | Method | Path | Auth | Fungsi |
+|---|--------|------|------|--------|
+| 1 | `POST` | `/auth/mobile/login` | — | Login mobile, return token |
+| 2 | `POST` | `/auth/register` | — | Register karyawan baru |
+| 3 | `POST` | `/auth/forgot-password` | — | Request reset password (generic) |
+| 4 | `GET` | `/auth/me` | ✓ | Data user saat ini |
+| 5 | `PATCH` | `/users/:id` | ✓ | Update profil (nama, jabatan, foto) |
+| 6 | `PATCH` | `/users/:id/password` | ✓ | Ubah password |
+| 7 | `POST` | `/auth/logout` | ✓ | Invalidate token |
+| 8 | `POST` | `/files` | ✓ | Upload foto (multipart/form-data) |
+| 9 | `GET` | `/files/:id` | ✓ | Metadata file & URL |
+| 10 | `GET` | `/offices/active` | ✓ | Data kantor aktif |
+| 11 | `GET` | `/attendances/today` | ✓ | Absensi hari ini |
+| 12 | `GET` | `/attendances/history` | ✓ | Riwayat absensi (paginated, filter bulan) |
+| 13 | `GET` | `/attendances/:id` | ✓ | Detail absensi |
+| 14 | `POST` | `/attendances/clock-in` | ✓ | Clock in (GPS + selfie) |
+| 15 | `POST` | `/attendances/clock-out` | ✓ | Clock out |
 
 ## Menambah Resource Filament
 

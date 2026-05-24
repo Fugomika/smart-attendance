@@ -17,19 +17,19 @@ class Attendance extends Model
     public $incrementing = false;
 
     protected $casts = [
-        'attendanceDate' => 'date',
+        'attendanceDate' => 'date:Y-m-d',
         'clockInTime' => 'datetime',
         'clockOutTime' => 'datetime',
     ];
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'UserId');
     }
 
     public function office(): BelongsTo
     {
-        return $this->belongsTo(Office::class);
+        return $this->belongsTo(Office::class, 'OfficeId');
     }
 
     public function photo(): BelongsTo

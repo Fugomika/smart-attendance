@@ -17,6 +17,6 @@ class Office extends Model
 
     public function attendances(): HasMany
     {
-        return $this->hasMany(Attendance::class);
+        return $this->hasMany(Attendance::class, 'OfficeId');
     }
 }

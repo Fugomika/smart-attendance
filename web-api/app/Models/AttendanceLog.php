@@ -17,6 +17,6 @@ class AttendanceLog extends Model
 
     public function attendance(): BelongsTo
     {
-        return $this->belongsTo(Attendance::class);
+        return $this->belongsTo(Attendance::class, 'AttendanceId');
     }
 }
