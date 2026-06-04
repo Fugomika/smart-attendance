@@ -30,20 +30,20 @@ class AttendanceStatusMapper {
       ),
       AttendanceStatus.pending => const StatusStyle(
         label: 'Pending',
-        foregroundColor: AppColors.warningDark,
-        backgroundColor: AppColors.warningLight,
-        borderColor: AppColors.warning,
+        foregroundColor: AppColors.pendingBadgeForeground,
+        backgroundColor: AppColors.pendingBadgeBackground,
+        borderColor: AppColors.pendingBadgeBorder,
       ),
       AttendanceStatus.valid => const StatusStyle(
         label: 'Valid',
         foregroundColor: AppColors.success,
-        backgroundColor: Color(0xFFDDF3E7),
+        backgroundColor: AppColors.validBadgeBackground,
         borderColor: AppColors.success,
       ),
       AttendanceStatus.rejected => const StatusStyle(
         label: 'Ditolak',
         foregroundColor: AppColors.dangerDark,
-        backgroundColor: Color(0xFFF8D6D6),
+        backgroundColor: AppColors.rejectedBadgeBackground,
         borderColor: AppColors.danger,
       ),
       AttendanceStatus.sick => const StatusStyle(
@@ -54,9 +54,9 @@ class AttendanceStatusMapper {
       ),
       AttendanceStatus.leave => const StatusStyle(
         label: 'Cuti',
-        foregroundColor: AppColors.warningDark,
-        backgroundColor: AppColors.warningLight,
-        borderColor: AppColors.warning,
+        foregroundColor: AppColors.textSecondary,
+        backgroundColor: AppColors.canvasNeutral,
+        borderColor: AppColors.border,
       ),
       AttendanceStatus.holiday => const StatusStyle(
         label: 'Libur',
@@ -69,8 +69,8 @@ class AttendanceStatusMapper {
 
   static const notCheckedIn = StatusStyle(
     label: 'Belum Absen',
-    foregroundColor: AppColors.dangerDark,
-    backgroundColor: Color(0xFFF8D6D6),
-    borderColor: AppColors.danger,
+    foregroundColor: AppColors.warningDark,
+    backgroundColor: AppColors.warningLight,
+    borderColor: AppColors.warning,
   );
 }

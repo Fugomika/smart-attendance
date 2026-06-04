@@ -6,6 +6,9 @@ class AttendanceRepository {
 
   final List<AttendanceModel> _attendances;
 
+  List<AttendanceModel> get allAttendances =>
+      List<AttendanceModel>.unmodifiable(_attendances);
+
   AttendanceModel? getTodayAttendance(String userId) {
     return getAttendanceByDate(userId, DateTime.now());
   }
@@ -91,6 +94,38 @@ class AttendanceRepository {
           : AttendanceStatus.valid,
       clockInTime: existing.clockInTime,
       clockOutTime: clockOutTime,
+      clockInLat: existing.clockInLat,
+      clockInLng: existing.clockInLng,
+      isOutside: existing.isOutside,
+      outsideReason: existing.outsideReason,
+      clockInPhotoId: existing.clockInPhotoId,
+    );
+  }
+
+  Future<AttendanceModel> validateAttendance({
+    required String attendanceId,
+    required AttendanceStatus targetStatus,
+  }) async {
+    final existing = getAttendanceById(attendanceId);
+    if (existing == null) {
+      throw StateError('Attendance tidak ditemukan.');
+    }
+    if (existing.status != AttendanceStatus.pending) {
+      throw StateError('Attendance tidak dalam status PENDING.');
+    }
+    if (targetStatus != AttendanceStatus.valid &&
+        targetStatus != AttendanceStatus.rejected) {
+      throw StateError('Target validasi tidak didukung.');
+    }
+
+    return AttendanceModel(
+      id: existing.id,
+      userId: existing.userId,
+      officeId: existing.officeId,
+      attendanceDate: existing.attendanceDate,
+      status: targetStatus,
+      clockInTime: existing.clockInTime,
+      clockOutTime: existing.clockOutTime,
       clockInLat: existing.clockInLat,
       clockInLng: existing.clockInLng,
       isOutside: existing.isOutside,

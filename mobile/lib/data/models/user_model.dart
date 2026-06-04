@@ -9,6 +9,7 @@ class UserModel extends Equatable {
     required this.email,
     required this.role,
     required this.isActive,
+    this.jabatan,
     this.photoId,
   });
 
@@ -17,8 +18,17 @@ class UserModel extends Equatable {
   final String email;
   final UserRole role;
   final bool isActive;
+  final String? jabatan;
   final String? photoId;
 
   @override
-  List<Object?> get props => [id, name, email, role, isActive, photoId];
+  List<Object?> get props => [
+    id,
+    name,
+    email,
+    role,
+    isActive,
+    jabatan,
+    photoId,
+  ];
 }

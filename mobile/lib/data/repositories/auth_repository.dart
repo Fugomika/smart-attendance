@@ -45,6 +45,7 @@ class AuthRepository {
       email: normalizedEmail,
       role: UserRole.employee,
       isActive: true,
+      jabatan: position.trim(),
       photoId: photoPath,
     );
   }

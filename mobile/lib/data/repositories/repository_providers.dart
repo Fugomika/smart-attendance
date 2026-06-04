@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/enums/attendance_status.dart';
 import 'admin_repository.dart';
 import 'attendance_repository.dart';
 import 'auth_repository.dart';
@@ -79,6 +80,24 @@ class AttendanceStoreController extends Notifier<List<AttendanceModel>> {
     return submitted;
   }
 
+  Future<AttendanceModel> validateAttendance({
+    required String attendanceId,
+    required AttendanceStatus targetStatus,
+  }) async {
+    final repository = AttendanceRepository(state);
+    final submitted = await repository.validateAttendance(
+      attendanceId: attendanceId,
+      targetStatus: targetStatus,
+    );
+
+    state = [
+      for (final attendance in state)
+        if (attendance.id == submitted.id) submitted else attendance,
+    ];
+
+    return submitted;
+  }
+
   bool _matchesUserAndDate(AttendanceModel submitted, AttendanceModel current) {
     return submitted.userId == current.userId &&
         AttendanceRepository.isSameDate(
@@ -135,5 +154,8 @@ final officeRepositoryProvider = Provider<OfficeRepository>((ref) {
 });
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
-  return AdminRepository(ref.watch(userRepositoryProvider));
+  return AdminRepository(
+    ref.watch(userRepositoryProvider),
+    ref.watch(attendanceRepositoryProvider),
+  );
 });

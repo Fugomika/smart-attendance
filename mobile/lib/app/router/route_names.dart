@@ -18,6 +18,9 @@ class RouteNames {
       '/employee/profile/change-password';
   static const String adminDashboard = '/admin/dashboard';
   static const String adminEmployees = '/admin/employees';
+  static const String adminEmployeeDetail = '/admin/employees/:employeeId';
+  static const String adminAttendanceDetail =
+      '/admin/attendance/detail/:attendanceId';
   static const String adminReports = '/admin/reports';
   static const String adminProfile = '/admin/profile';
   static const String adminProfileEdit = '/admin/profile/edit';
@@ -44,6 +47,8 @@ class RouteNames {
       'employee-profile-change-password';
   static const String adminDashboardName = 'admin-dashboard';
   static const String adminEmployeesName = 'admin-employees';
+  static const String adminEmployeeDetailName = 'admin-employee-detail';
+  static const String adminAttendanceDetailName = 'admin-attendance-detail';
   static const String adminReportsName = 'admin-reports';
   static const String adminProfileName = 'admin-profile';
   static const String adminProfileEditName = 'admin-profile-edit';
@@ -61,5 +66,13 @@ class RouteNames {
 
   static String employeeAttendanceDetailPath(String attendanceId) {
     return '/employee/attendance/detail/$attendanceId';
+  }
+
+  static String adminEmployeeDetailPath(String employeeId) {
+    return '/admin/employees/$employeeId';
+  }
+
+  static String adminAttendanceDetailPath(String attendanceId) {
+    return '/admin/attendance/detail/$attendanceId';
   }
 }

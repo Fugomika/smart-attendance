@@ -12,4 +12,31 @@ class UserRepository {
       return isEmployee && matchesStatus;
     }).toList();
   }
+
+  UserModel? getEmployeeById(String userId) {
+    for (final user in dummyUsers) {
+      if (user.id == userId && user.role == UserRole.employee) {
+        return user;
+      }
+    }
+
+    return null;
+  }
+
+  List<UserModel> getAttendanceUsers({bool? isActive}) {
+    return dummyUsers.where((user) {
+      final matchesStatus = isActive == null || user.isActive == isActive;
+      return matchesStatus;
+    }).toList();
+  }
+
+  UserModel? getAttendanceUserById(String userId) {
+    for (final user in dummyUsers) {
+      if (user.id == userId) {
+        return user;
+      }
+    }
+
+    return null;
+  }
 }

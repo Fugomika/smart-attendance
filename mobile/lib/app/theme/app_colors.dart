@@ -11,6 +11,11 @@ class AppColors {
   static const Color warningLight = Color(0xFFFFD688);
   static const Color warning = Color(0xFFFFBB38);
   static const Color warningDark = Color(0xFFE6A832);
+  static const Color pendingBadgeBackground = Color(0xFFFFE7AE);
+  static const Color pendingBadgeBorder = Color(0xFFF0B43A);
+  static const Color pendingBadgeForeground = Color(0xFF9A6400);
+  static const Color validBadgeBackground = Color(0xFFDDF3E7);
+  static const Color rejectedBadgeBackground = Color(0xFFF8D6D6);
   static const Color dangerLight = Color(0xFFFF8C8C);
   static const Color danger = Color(0xFFFF4040);
   static const Color dangerDark = Color(0xFFCC3333);

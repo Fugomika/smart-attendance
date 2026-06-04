@@ -14,8 +14,8 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.sm,
+        vertical: 4,
       ),
       decoration: BoxDecoration(
         color: style.backgroundColor,
@@ -24,7 +24,10 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         style.label,
-        style: AppTextStyles.bodyMedium.copyWith(color: style.foregroundColor),
+        style: AppTextStyles.caption.copyWith(
+          color: style.foregroundColor,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

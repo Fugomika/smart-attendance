@@ -4,7 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/enums/app_mode.dart';
 import '../../core/enums/user_role.dart';
-import '../../features/admin/presentation/admin_placeholder_tab.dart';
+import '../../features/admin/presentation/admin_attendance_detail_screen.dart';
+import '../../features/admin/presentation/admin_attendance_report_screen.dart';
+import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/admin_employee_detail_screen.dart';
+import '../../features/admin/presentation/admin_employee_list_screen.dart';
 import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/presentation/forgot_password_placeholder_screen.dart';
@@ -147,6 +151,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: RouteNames.adminEmployeeDetail,
+        name: RouteNames.adminEmployeeDetailName,
+        pageBuilder: (context, state) {
+          final employeeId = state.pathParameters['employeeId'] ?? '';
+          return _noTransitionPage(
+            state,
+            AdminEmployeeDetailScreen(employeeId: employeeId),
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.adminAttendanceDetail,
+        name: RouteNames.adminAttendanceDetailName,
+        pageBuilder: (context, state) {
+          final attendanceId = state.pathParameters['attendanceId'] ?? '';
+          return _noTransitionPage(
+            state,
+            AdminAttendanceDetailScreen(attendanceId: attendanceId),
+          );
+        },
+      ),
+      GoRoute(
         path: RouteNames.adminProfileEdit,
         name: RouteNames.adminProfileEditName,
         pageBuilder: (context, state) => _noTransitionPage(
@@ -219,13 +245,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.adminDashboard,
                 name: RouteNames.adminDashboardName,
-                pageBuilder: (context, state) => _noTransitionPage(
-                  state,
-                  const AdminPlaceholderTab(
-                    title: 'Dashboard',
-                    icon: Icons.grid_view_rounded,
-                  ),
-                ),
+                pageBuilder: (context, state) =>
+                    _noTransitionPage(state, const AdminDashboardScreen()),
               ),
             ],
           ),
@@ -234,13 +255,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.adminEmployees,
                 name: RouteNames.adminEmployeesName,
-                pageBuilder: (context, state) => _noTransitionPage(
-                  state,
-                  const AdminPlaceholderTab(
-                    title: 'Karyawan',
-                    icon: Icons.groups_rounded,
-                  ),
-                ),
+                pageBuilder: (context, state) =>
+                    _noTransitionPage(state, const AdminEmployeeListScreen()),
               ),
             ],
           ),
@@ -251,10 +267,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: RouteNames.adminReportsName,
                 pageBuilder: (context, state) => _noTransitionPage(
                   state,
-                  const AdminPlaceholderTab(
-                    title: 'Laporan',
-                    icon: Icons.description_rounded,
-                  ),
+                  const AdminAttendanceReportScreen(),
                 ),
               ),
             ],

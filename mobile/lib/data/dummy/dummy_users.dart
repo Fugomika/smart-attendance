@@ -8,6 +8,7 @@ const dummyUsers = [
     email: 'admin@gmail.com',
     role: UserRole.admin,
     isActive: true,
+    jabatan: 'Administrator Sistem',
   ),
   UserModel(
     id: 'user-1',
@@ -15,6 +16,7 @@ const dummyUsers = [
     email: 'user@gmail.com',
     role: UserRole.employee,
     isActive: true,
+    jabatan: 'Staf Operasional',
   ),
   UserModel(
     id: 'employee-1',
@@ -22,6 +24,7 @@ const dummyUsers = [
     email: 'egi@gmail.com',
     role: UserRole.employee,
     isActive: true,
+    jabatan: 'Staf Frontend',
   ),
   UserModel(
     id: 'employee-2',
@@ -29,6 +32,7 @@ const dummyUsers = [
     email: 'qonita@gmail.com',
     role: UserRole.employee,
     isActive: true,
+    jabatan: 'Staf HR',
   ),
   UserModel(
     id: 'employee-4',
@@ -36,6 +40,31 @@ const dummyUsers = [
     email: 'ella@gmail.com',
     role: UserRole.employee,
     isActive: true,
+    jabatan: 'Admin Keuangan',
+  ),
+  UserModel(
+    id: 'employee-5',
+    name: 'Muhammad Abdurrahman Pratama Nugraha',
+    email: 'm.abdurrahman.pratama.nugraha@smartattendance-company.co.id',
+    role: UserRole.employee,
+    isActive: true,
+    jabatan: 'Koordinator Administrasi Operasional Wilayah Regional Tengah',
+  ),
+  UserModel(
+    id: 'employee-6',
+    name: 'Nabila Putri Ramadhani',
+    email: 'nabila.putri@smartattendance.co.id',
+    role: UserRole.employee,
+    isActive: true,
+    jabatan: 'Senior Human Capital Business Partner',
+  ),
+  UserModel(
+    id: 'employee-7',
+    name: 'Rizky Saputra',
+    email: 'rizky.saputra@smartattendance.co.id',
+    role: UserRole.employee,
+    isActive: true,
+    jabatan: 'Staf General Affairs',
   ),
   UserModel(
     id: 'employee-3',
@@ -43,5 +72,6 @@ const dummyUsers = [
     email: 'farras@gmail.com',
     role: UserRole.employee,
     isActive: false,
+    jabatan: 'Desainer UI/UX',
   ),
 ];
