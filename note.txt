@@ -1,0 +1,91 @@
+ABP
+
+https://docs.google.com/spreadsheets/d/1g5NXDUn76iJblZyqKco6KyZCTB9aZAFi7N7AG3baEuc
+
+https://www.figma.com/proto/tMwWiosnv657Hsxw4s12Hu/Kelompok-6---ABP?node-id=21-73&p=f&t=3qfEGgTSkrgFmkRz-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1
+
+https://docs.google.com/presentation/d/1caa-XuGqY3q-9-9beM1-KcXSkfcLEeJPqWrS3IsiAsM
+
+
+
+Mobile
+Minggu 4
+- ide tubes -> camera, media, maps, dan place
+Minggu 7
+- WAJIB pakai flutter
+- Presentasi mobile dengan camera API
+
+
+Web 
+Setelah UTS
+- bebas pakai apa saja, node dll
+- proposal versi web dari mobilenya
+- Susunlah proposal untuk pengerjaan tugas besar ABP dengan minimal konten sebagai berikut:
+1. Latar Belakang pengambilan topik
+2. Deskripsi produk yang akan dikembangkan
+3. Arsitektur Sistem yang akan dikembangkan
+4. Fiur-fitur yang akan dibuat pada paltform Web (beserta usernya)
+5. Fitur-fitur yang akan dibuat pada paltform Mobile (beserta usernya)
+6. Pembagian tugas per individu
+7. Minimal Spek Teknis dapat Anda cek pada slide materi pertemuan 1
+8. Format proposal bebas. Buat se-kreatif dan namun dapat merepresentasikan pekerjaan kelompok Anda secara jelas.
+
+
+Minggu 16
+- Artefak Final TUBES Combined (Mobile Dev + API from Web)
+- Final Project Apps (Laravel Project dan Flutter Project)
+- Final Project Documentation (*.pdf)
+- Final Project Presentation (*.ppt)
+- Upload ke Google Drive / One Drive, lalu upload link sharing ke submission ini.
+
+
+Implement this design from Figma.
+@https://www.figma.com/design/awuhTEppbp07In1njzUxKz/Kelompok-6---ABP?node-id=21-2&m=dev
+
+
+Auth
+- forgot_password
+
+#User
+1. Login
+2. Forgot password
+3. Clock in (lokasi + selfie)
+4. Clock out
+5. Status presensi hari ini
+6. History presensi
+7. Update profile & password
+8. registrasi (hanya unutk karyawan)
+
+
+# Admin
+1. Dashboard rekap hari ini
+2. List karyawan
+3. Detail karyawan
+4. Lihat riwayat presensi karyawan
+5. Laporan presensi per tanggal
+6. Detail presensi
+7. Validasi presensi pending (approve/reject)
+
+# Web Admin
+1. Login admin
+2. Dashboard lengkap
+3. CRUD user/karyawan
+4. Setting kantor (lokasi + radius)
+5. Setting hari libur
+6. Riwayat/laporan presensi lengkap
+7. Detail presensi
+8. Validasi presensi pending
+9. Manage presensi/edit manual
+10. Export laporan
+
+
+
+Future
+- attendance_Log
+- face recognition
+- hanya isactive yang bisa login
+
+- status bar
+- validsi form
+- tombol previw
+- wording2
