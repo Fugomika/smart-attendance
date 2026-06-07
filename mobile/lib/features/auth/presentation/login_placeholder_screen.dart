@@ -165,7 +165,8 @@ class _LoginPlaceholderScreenState
                       ),
                       const Spacer(),
                       TextButton(
-                        onPressed: () => context.go(RouteNames.forgotPassword),
+                        onPressed: () =>
+                            context.push(RouteNames.forgotPassword),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(48, 36),
@@ -231,7 +232,7 @@ class _LoginPlaceholderScreenState
                         ),
                       ),
                       TextButton(
-                        onPressed: () => context.go(RouteNames.register),
+                        onPressed: () => context.push(RouteNames.register),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.xs,

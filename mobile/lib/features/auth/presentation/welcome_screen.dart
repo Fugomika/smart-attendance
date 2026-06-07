@@ -89,7 +89,7 @@ class WelcomeScreen extends StatelessWidget {
                           backgroundColor: AppColors.surface,
                           foregroundColor: AppColors.primary,
                           borderColor: AppColors.surface,
-                          onPressed: () => context.go(RouteNames.login),
+                          onPressed: () => context.push(RouteNames.login),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         _WelcomeActionButton(
@@ -97,7 +97,7 @@ class WelcomeScreen extends StatelessWidget {
                           backgroundColor: Colors.transparent,
                           foregroundColor: AppColors.surface,
                           borderColor: AppColors.surface,
-                          onPressed: () => context.go(RouteNames.register),
+                          onPressed: () => context.push(RouteNames.register),
                         ),
                       ],
                     ),

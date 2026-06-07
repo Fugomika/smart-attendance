@@ -44,6 +44,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isEmployeeRoute = location.startsWith('/employee');
       final isAdminRoute = location.startsWith('/admin');
 
+      if (authState.isChecking) {
+        return null;
+      }
+
       if (!authState.isAuthenticated && !isAuthRoute) {
         return RouteNames.login;
       }
@@ -298,6 +302,7 @@ class _GoRouterRefreshNotifier extends ChangeNotifier {
   _GoRouterRefreshNotifier(Ref ref) {
     _authSub = ref.listen<AuthState>(authControllerProvider, (previous, next) {
       final authChanged =
+          previous?.status != next.status ||
           previous?.user != next.user ||
           previous?.errorMessage != next.errorMessage ||
           previous?.isLoading != next.isLoading;

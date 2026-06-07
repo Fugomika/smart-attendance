@@ -51,7 +51,7 @@ class _ForgotPasswordPlaceholderScreenState
               Icons.arrow_back_rounded,
               color: AppColors.textPrimary,
             ),
-            onPressed: () => context.go(RouteNames.login),
+            onPressed: _goBackToLogin,
           ),
         ),
         body: SafeArea(
@@ -113,7 +113,7 @@ class _ForgotPasswordPlaceholderScreenState
                   const SizedBox(height: AppSpacing.md),
                   Center(
                     child: TextButton(
-                      onPressed: () => context.go(RouteNames.login),
+                      onPressed: _goBackToLogin,
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
@@ -172,6 +172,15 @@ class _ForgotPasswordPlaceholderScreenState
       context,
       'Jika email terdaftar, instruksi reset password akan dikirim.',
     );
+    context.go(RouteNames.login);
+  }
+
+  void _goBackToLogin() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
     context.go(RouteNames.login);
   }
 }

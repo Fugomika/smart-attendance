@@ -7,16 +7,37 @@ import '../../../data/models/user_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../shared/providers/app_mode_provider.dart';
 
-class AuthState extends Equatable {
-  const AuthState({this.user, this.errorMessage, this.isLoading = false});
+enum AuthStatus { checking, authenticated, unauthenticated }
 
+class AuthState extends Equatable {
+  const AuthState({
+    required this.status,
+    this.user,
+    this.errorMessage,
+    this.isLoading = false,
+  });
+
+  const AuthState.checking()
+    : this(status: AuthStatus.checking, isLoading: true);
+
+  const AuthState.unauthenticated({String? errorMessage})
+    : this(status: AuthStatus.unauthenticated, errorMessage: errorMessage);
+
+  const AuthState.authenticated({required UserModel user})
+    : this(status: AuthStatus.authenticated, user: user);
+
+  final AuthStatus status;
   final UserModel? user;
   final String? errorMessage;
   final bool isLoading;
 
-  bool get isAuthenticated => user != null;
+  bool get isChecking => status == AuthStatus.checking;
+
+  bool get isAuthenticated =>
+      status == AuthStatus.authenticated && user != null;
 
   AuthState copyWith({
+    AuthStatus? status,
     UserModel? user,
     String? errorMessage,
     bool? isLoading,
@@ -24,6 +45,7 @@ class AuthState extends Equatable {
     bool clearError = false,
   }) {
     return AuthState(
+      status: status ?? this.status,
       user: clearUser ? null : user ?? this.user,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       isLoading: isLoading ?? this.isLoading,
@@ -31,20 +53,41 @@ class AuthState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [user, errorMessage, isLoading];
+  List<Object?> get props => [status, user, errorMessage, isLoading];
 }
 
 class AuthController extends Notifier<AuthState> {
   @override
-  AuthState build() => const AuthState();
+  AuthState build() => const AuthState.checking();
+
+  Future<void> restoreSession() async {
+    if (!state.isChecking) {
+      return;
+    }
+
+    final token = await ref.read(authTokenStoreProvider).readToken();
+    if (token == null || token.trim().isEmpty) {
+      state = const AuthState.unauthenticated();
+      return;
+    }
+
+    // The saved token is validated through /auth/me in Batch 3.
+    state = const AuthState.unauthenticated();
+  }
 
   Future<bool> login({required String email, required String password}) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(
+      status: AuthStatus.unauthenticated,
+      isLoading: true,
+      clearError: true,
+    );
     final repository = ref.read(authRepositoryProvider);
     final user = await repository.login(email: email, password: password);
 
     if (user == null) {
-      state = const AuthState(errorMessage: 'Email atau password salah.');
+      state = const AuthState.unauthenticated(
+        errorMessage: 'Email atau password salah.',
+      );
       return false;
     }
 
@@ -54,7 +97,7 @@ class AuthController extends Notifier<AuthState> {
           role: user.role,
           mode: user.role == UserRole.admin ? AppMode.admin : AppMode.employee,
         );
-    state = AuthState(user: user);
+    state = AuthState.authenticated(user: user);
     return true;
   }
 
@@ -65,7 +108,11 @@ class AuthController extends Notifier<AuthState> {
     required String password,
     String? photoPath,
   }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(
+      status: AuthStatus.unauthenticated,
+      isLoading: true,
+      clearError: true,
+    );
     final repository = ref.read(authRepositoryProvider);
     final user = await repository.register(
       name: name,
@@ -76,24 +123,31 @@ class AuthController extends Notifier<AuthState> {
     );
 
     if (user == null) {
-      state = const AuthState(errorMessage: 'Email sudah terdaftar.');
+      state = const AuthState.unauthenticated(
+        errorMessage: 'Email sudah terdaftar.',
+      );
       return false;
     }
 
-    state = const AuthState();
+    state = const AuthState.unauthenticated();
     return true;
   }
 
   Future<void> requestPasswordReset({required String email}) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(
+      status: AuthStatus.unauthenticated,
+      isLoading: true,
+      clearError: true,
+    );
     final repository = ref.read(authRepositoryProvider);
     await repository.requestPasswordReset(email: email);
     state = state.copyWith(isLoading: false);
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await ref.read(authTokenStoreProvider).clear();
     ref.read(appModeProvider.notifier).reset();
-    state = const AuthState();
+    state = const AuthState.unauthenticated();
   }
 }
 

@@ -205,7 +205,7 @@ class _RegisterPlaceholderScreenState
                         ),
                       ),
                       TextButton(
-                        onPressed: () => context.go(RouteNames.login),
+                        onPressed: _goBackToLogin,
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.xs,
@@ -276,7 +276,8 @@ class _RegisterPlaceholderScreenState
       }
     });
 
-    final hasError = _nameError != null ||
+    final hasError =
+        _nameError != null ||
         _emailError != null ||
         _positionError != null ||
         _passwordError != null ||
@@ -285,7 +286,9 @@ class _RegisterPlaceholderScreenState
       return;
     }
 
-    final success = await ref.read(authControllerProvider.notifier).register(
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .register(
           name: name,
           email: email,
           position: position,
@@ -309,6 +312,15 @@ class _RegisterPlaceholderScreenState
       context,
       'Pendaftaran berhasil. Silakan masuk dengan akun Anda.',
     );
+    context.go(RouteNames.login);
+  }
+
+  void _goBackToLogin() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
     context.go(RouteNames.login);
   }
 }

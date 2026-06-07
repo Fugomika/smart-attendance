@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/enums/attendance_status.dart';
+import '../../core/network/api_client.dart';
+import '../../core/network/api_config.dart';
+import '../../core/storage/auth_token_store.dart';
 import 'admin_repository.dart';
 import 'attendance_repository.dart';
 import 'auth_repository.dart';
@@ -10,6 +13,22 @@ import '../models/attendance_model.dart';
 import '../models/office_model.dart';
 import 'office_repository.dart';
 import 'user_repository.dart';
+
+final apiConfigProvider = Provider<ApiConfig>((ref) {
+  return const ApiConfig();
+});
+
+final authTokenStoreProvider = Provider<AuthTokenStore>((ref) {
+  return AuthTokenStore();
+});
+
+final apiClientProvider = Provider<ApiClient>((ref) {
+  final tokenStore = ref.watch(authTokenStoreProvider);
+  return ApiClient(
+    config: ref.watch(apiConfigProvider),
+    tokenReader: tokenStore.readToken,
+  );
+});
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return const AuthRepository();
