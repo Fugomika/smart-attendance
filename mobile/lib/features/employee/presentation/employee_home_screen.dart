@@ -45,7 +45,8 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
     final attendance = ref.watch(todayAttendanceProvider);
     final office = ref.watch(todayAttendanceOfficeProvider);
     final displayName = profile?.name ?? user?.name ?? 'Karyawan';
-    final displayPhotoPath = profile?.photoPath ?? user?.photoId;
+    final displayPhotoPath =
+        profile?.photoPath ?? user?.photoUrl ?? user?.photoId;
     final liveAttendanceDate = DateTime.now();
     final previewAttendanceDate =
         _debugAttendancePreview == _DebugAttendancePreview.live

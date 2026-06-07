@@ -66,6 +66,23 @@ class ApiClient {
     );
   }
 
+  Future<ApiResponse<T>> postMultipart<T>(
+    String path, {
+    required FormData data,
+    Map<String, dynamic>? queryParameters,
+    required T Function(Object? json) parseData,
+  }) {
+    return _send<T>(
+      () => _dio.post<Object?>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(contentType: 'multipart/form-data'),
+      ),
+      parseData: parseData,
+    );
+  }
+
   Future<ApiResponse<T>> patch<T>(
     String path, {
     Object? data,
@@ -108,12 +125,7 @@ class ApiClient {
           data['message']?.toString() ??
           'Terjadi kesalahan. Silakan coba lagi.';
       final rawErrors = data['errors'];
-      final errors = rawErrors is List
-          ? rawErrors
-                .whereType<Map<String, dynamic>>()
-                .map(ApiValidationError.fromJson)
-                .toList(growable: false)
-          : const <ApiValidationError>[];
+      final errors = _parseValidationErrors(rawErrors);
 
       return ApiException(
         message: message,
@@ -130,5 +142,28 @@ class ApiClient {
     }
 
     return ApiException.unknown();
+  }
+
+  List<ApiValidationError> _parseValidationErrors(Object? rawErrors) {
+    if (rawErrors is List) {
+      return rawErrors
+          .whereType<Map<String, dynamic>>()
+          .map(ApiValidationError.fromJson)
+          .toList(growable: false);
+    }
+
+    if (rawErrors is Map<String, dynamic>) {
+      return rawErrors.entries
+          .map((entry) {
+            final value = entry.value;
+            final message = value is List && value.isNotEmpty
+                ? value.first.toString()
+                : value.toString();
+            return ApiValidationError(path: entry.key, message: message);
+          })
+          .toList(growable: false);
+    }
+
+    return const <ApiValidationError>[];
   }
 }

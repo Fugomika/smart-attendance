@@ -27,9 +27,12 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
+  late final TextEditingController _positionController;
+  String? _initialPhotoPath;
   String? _photoPath;
   String? _nameError;
-  String? _emailError;
+  String? _positionError;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -37,6 +40,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final profile = ref.read(profileControllerProvider);
     _nameController = TextEditingController(text: profile?.name ?? '');
     _emailController = TextEditingController(text: profile?.email ?? '');
+    _positionController = TextEditingController(text: profile?.jabatan ?? '');
+    _initialPhotoPath = profile?.photoPath;
     _photoPath = profile?.photoPath;
   }
 
@@ -44,6 +49,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _positionController.dispose();
     super.dispose();
   }
 
@@ -106,13 +112,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               hint: 'Masukkan email',
                               controller: _emailController,
                               prefixIcon: Icons.email_outlined,
-                              errorText: _emailError,
-                              isRequired: true,
+                              enabled: false,
                               keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            AppFormField(
+                              label: 'Jabatan',
+                              hint: 'Masukkan jabatan',
+                              controller: _positionController,
+                              prefixIcon: Icons.work_outline_rounded,
+                              errorText: _positionError,
+                              isRequired: true,
                               textInputAction: TextInputAction.done,
                               onChanged: (_) {
-                                if (_emailError != null) {
-                                  setState(() => _emailError = null);
+                                if (_positionError != null) {
+                                  setState(() => _positionError = null);
                                 }
                               },
                             ),
@@ -126,9 +141,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       AppButton(
-                        label: 'Simpan Perubahan',
+                        label: _isSaving ? 'Menyimpan...' : 'Simpan Perubahan',
                         icon: Icons.save_rounded,
-                        onPressed: _saveProfile,
+                        onPressed: _isSaving ? null : _saveProfile,
                       ),
                     ],
                   ),
@@ -138,39 +153,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
     final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
+    final position = _positionController.text.trim();
 
     setState(() {
       _nameError = name.isEmpty ? 'Nama lengkap wajib diisi.' : null;
-      _emailError = _validateEmail(email);
+      _positionError = position.isEmpty ? 'Jabatan wajib diisi.' : null;
     });
 
-    if (_nameError != null || _emailError != null) {
+    if (_nameError != null || _positionError != null) {
       return;
     }
 
-    ref
+    setState(() => _isSaving = true);
+
+    final result = await ref
         .read(profileControllerProvider.notifier)
         .saveProfile(
           name: name,
-          email: email,
+          jabatan: position,
           photoPath: _photoPath,
-          clearPhoto: _photoPath == null,
+          clearPhoto: _photoPath == null && _initialPhotoPath != null,
         );
 
-    AppSnackBar.success(context, 'Profile berhasil diperbarui.');
-    _goBack();
-  }
-
-  String? _validateEmail(String email) {
-    if (email.isEmpty) {
-      return 'Email wajib diisi.';
+    if (!mounted) {
+      return;
     }
 
-    final isValid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
-    return isValid ? null : 'Format email tidak valid.';
+    setState(() => _isSaving = false);
+
+    if (!result.isSuccess) {
+      AppSnackBar.error(context, result.message ?? 'Profil gagal diperbarui.');
+      return;
+    }
+
+    AppSnackBar.success(
+      context,
+      result.message ?? 'Profil berhasil diperbarui.',
+    );
+    _goToProfile();
+  }
+
+  void _goToProfile() {
+    context.go(
+      widget.isAdminProfile
+          ? RouteNames.adminProfile
+          : RouteNames.employeeProfile,
+    );
   }
 
   void _goBack() {

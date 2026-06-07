@@ -281,7 +281,9 @@ class _ProfileCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
-                      profile.roleLabel,
+                      profile.jabatan?.trim().isNotEmpty == true
+                          ? profile.jabatan!
+                          : profile.roleLabel,
                       style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
                       ),

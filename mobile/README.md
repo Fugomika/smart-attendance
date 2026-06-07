@@ -2,11 +2,12 @@
 
 Smart Attendance adalah aplikasi presensi internal kantor berbasis Flutter. Aplikasi ini memiliki dua mode, yaitu mode karyawan dan mode admin.
 
-Pada tahap ini aplikasi masih menggunakan data dummy dan belum terhubung ke backend/API.
+Pada tahap ini aplikasi sedang di-wire bertahap ke Laravel API Phase 1. Auth dan profile sudah memakai API; fitur admin, office, dan attendance tertentu masih memakai dummy/in-memory sesuai batch integrasi.
 
-## Fitur Sementara
+## Status Fitur
 
-- Login dummy untuk karyawan dan admin
+- Login API untuk karyawan dan admin
+- Register, forgot password, profile, upload foto profile, dan ubah password via API
 - Tampilan dasar mode karyawan: Home, Riwayat, Profil
 - Tampilan dasar mode admin: Dashboard, Karyawan, Laporan, Profil
 - Routing dasar antar halaman
@@ -27,7 +28,7 @@ Pada tahap ini aplikasi masih menggunakan data dummy dan belum terhubung ke back
 - Flutter Test untuk widget test
 - Flutter Analyze untuk pengecekan kualitas kode
 
-## Akun Dummy
+## Akun Dev API
 
 Karyawan:
 
@@ -40,7 +41,7 @@ Admin:
 
 ```txt
 Email    : admin@gmail.com
-Password : password
+Password : Admin123
 ```
 
 ## Struktur Folder
@@ -49,7 +50,7 @@ Password : password
 lib/
   app/        konfigurasi aplikasi, routing, dan theme
   core/       enum dan helper umum
-  data/       model, dummy data, dan repository dummy
+  data/       model, dummy data, repository, dan API repository
   features/   fitur aplikasi seperti auth, employee, dan admin
   shared/     widget reusable yang dipakai di banyak halaman
 ```
@@ -69,19 +70,17 @@ Project ini menggunakan struktur sederhana berbasis fitur.
 
 - `app` digunakan untuk pengaturan utama aplikasi seperti theme dan routing.
 - `core` digunakan untuk kebutuhan umum yang bisa dipakai di banyak fitur.
-- `data` digunakan untuk menyimpan model, dummy data, dan repository.
+- `data` digunakan untuk menyimpan model, dummy data, repository, dan API repository.
 - `features` digunakan untuk memisahkan bagian aplikasi berdasarkan fitur.
 - `shared` digunakan untuk komponen UI yang dipakai berulang.
 
-Alur data sementara:
+Alur data:
 
 ```txt
-Dummy Data -> Repository -> Provider -> Screen
+Screen -> Provider -> Repository -> API Client / Dummy Store
 ```
 
 Navigasi utama menggunakan shell navigation agar bottom navigation tetap stabil saat berpindah menu.
-
-Nantinya saat backend sudah tersedia, bagian dummy data dapat diganti dengan API tanpa mengubah terlalu banyak struktur halaman.
 
 ## Menjalankan Project
 
@@ -99,7 +98,6 @@ flutter test
 
 ## Catatan
 
-- Backend/API belum digunakan.
-- Camera, GPS, dan map asli belum diimplementasikan.
-- Tampilan fitur masih berupa placeholder.
-- Implementasi UI final akan dikerjakan bertahap pada tahap berikutnya.
+- Base URL dev HP saat ini: `http://192.168.1.6:8000/api/v1`.
+- Admin feature data masih dummy untuk Phase 1.
+- Office dan attendance API masih dikerjakan bertahap 

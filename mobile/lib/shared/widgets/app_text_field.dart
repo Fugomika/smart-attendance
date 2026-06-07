@@ -25,6 +25,8 @@ class AppTextField extends StatelessWidget {
     this.maxLines,
     this.maxLength,
     this.showCounter = true,
+    this.readOnly = false,
+    this.enabled = true,
     super.key,
   });
 
@@ -46,11 +48,18 @@ class AppTextField extends StatelessWidget {
   final int? maxLines;
   final int? maxLength;
   final bool showCounter;
+  final bool readOnly;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final borderColor = isSearch ? Colors.transparent : AppColors.textSecondary;
     final focusedColor = isSearch ? Colors.transparent : AppColors.primary;
+    final fillColor = !enabled
+        ? AppColors.canvasNeutral
+        : isSearch
+        ? AppColors.canvasNeutral
+        : AppColors.surface;
 
     return TextField(
       controller: controller,
@@ -58,6 +67,8 @@ class AppTextField extends StatelessWidget {
       minLines: obscureText ? null : minLines,
       maxLines: obscureText ? 1 : maxLines ?? 1,
       maxLength: maxLength,
+      readOnly: readOnly,
+      enabled: enabled,
       keyboardType: keyboardType,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
@@ -69,7 +80,7 @@ class AppTextField extends StatelessWidget {
       smartQuotesType: SmartQuotesType.disabled,
       spellCheckConfiguration: const SpellCheckConfiguration.disabled(),
       style: AppTextStyles.body.copyWith(
-        color: AppColors.textPrimary,
+        color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
         fontSize: 16,
         fontWeight: FontWeight.w400,
       ),
@@ -86,7 +97,7 @@ class AppTextField extends StatelessWidget {
         counterText: showCounter ? null : '',
         errorText: errorText,
         filled: true,
-        fillColor: isSearch ? AppColors.canvasNeutral : AppColors.surface,
+        fillColor: fillColor,
         prefixIcon: prefixIcon == null
             ? null
             : Padding(

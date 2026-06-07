@@ -27,7 +27,8 @@ class AdminDashboardScreen extends ConsumerWidget {
     final selectedDate = ref.watch(adminDashboardSelectedDateProvider);
     final summaryAsync = ref.watch(adminSummaryProvider);
     final displayName = profile?.name ?? currentUser?.name ?? 'Admin';
-    final displayPhotoPath = profile?.photoPath ?? currentUser?.photoId;
+    final displayPhotoPath =
+        profile?.photoPath ?? currentUser?.photoUrl ?? currentUser?.photoId;
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.primary,

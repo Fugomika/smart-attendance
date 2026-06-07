@@ -27,6 +27,8 @@ class AppFormField extends StatelessWidget {
     this.autocorrect = false,
     this.enableSuggestions = false,
     this.isRequired = false,
+    this.readOnly = false,
+    this.enabled = true,
     super.key,
   });
 
@@ -50,6 +52,8 @@ class AppFormField extends StatelessWidget {
   final bool autocorrect;
   final bool enableSuggestions;
   final bool isRequired;
+  final bool readOnly;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +102,8 @@ class AppFormField extends StatelessWidget {
           autofillHints: autofillHints,
           autocorrect: autocorrect,
           enableSuggestions: enableSuggestions,
+          readOnly: readOnly,
+          enabled: enabled,
         ),
         if (helperText != null && errorText == null)
           Padding(

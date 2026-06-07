@@ -104,6 +104,8 @@ class AppAvatarPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = _imageProvider(imagePath);
+
     return Column(
       children: [
         GestureDetector(
@@ -118,14 +120,11 @@ class AppAvatarPicker extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: AppColors.softBlue,
                   border: Border.all(color: AppColors.border, width: 1.5),
-                  image: imagePath != null
-                      ? DecorationImage(
-                          image: FileImage(File(imagePath!)),
-                          fit: BoxFit.cover,
-                        )
+                  image: imageProvider != null
+                      ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
                       : null,
                 ),
-                child: imagePath == null
+                child: imageProvider == null
                     ? const Icon(
                         Icons.person_outline_rounded,
                         size: 48,
@@ -166,6 +165,19 @@ class AppAvatarPicker extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  ImageProvider? _imageProvider(String? value) {
+    final path = value?.trim();
+    if (path == null || path.isEmpty) {
+      return null;
+    }
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return NetworkImage(path);
+    }
+
+    return FileImage(File(path));
   }
 }
 

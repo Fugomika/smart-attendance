@@ -11,7 +11,9 @@ import '../dummy/dummy_attendances.dart';
 import '../dummy/dummy_offices.dart';
 import '../models/attendance_model.dart';
 import '../models/office_model.dart';
+import 'file_repository.dart';
 import 'office_repository.dart';
+import 'profile_repository.dart';
 import 'user_repository.dart';
 
 final apiConfigProvider = Provider<ApiConfig>((ref) {
@@ -31,7 +33,18 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return const AuthRepository();
+  return AuthRepository(
+    apiClient: ref.watch(apiClientProvider),
+    tokenStore: ref.watch(authTokenStoreProvider),
+  );
+});
+
+final fileRepositoryProvider = Provider<FileRepository>((ref) {
+  return FileRepository(ref.watch(apiClientProvider));
+});
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  return ProfileRepository(ref.watch(apiClientProvider));
 });
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {

@@ -160,11 +160,19 @@ class _ForgotPasswordPlaceholderScreenState
       return;
     }
 
-    await ref
+    final success = await ref
         .read(authControllerProvider.notifier)
         .requestPasswordReset(email: email);
 
     if (!mounted) {
+      return;
+    }
+
+    if (!success) {
+      final message =
+          ref.read(authControllerProvider).errorMessage ??
+          'Permintaan reset password gagal. Silakan coba lagi.';
+      AppSnackBar.error(context, message);
       return;
     }
 

@@ -1,25 +1,65 @@
-import '../../core/enums/user_role.dart';
-import '../dummy/dummy_users.dart';
+import '../../core/network/api_client.dart';
+import '../../core/storage/auth_token_store.dart';
+import '../models/auth_session_model.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
-  const AuthRepository();
+  const AuthRepository({
+    required ApiClient apiClient,
+    required AuthTokenStore tokenStore,
+  }) : _apiClient = apiClient,
+       _tokenStore = tokenStore;
+
+  final ApiClient _apiClient;
+  final AuthTokenStore _tokenStore;
 
   Future<UserModel?> login({
     required String email,
     required String password,
+    required bool remember,
   }) async {
-    if (password != 'password') {
-      return null;
+    final response = await _apiClient.post<AuthSessionModel>(
+      '/auth/mobile/login',
+      data: {'email': email.trim(), 'password': password},
+      parseData: (json) {
+        if (json is Map<String, dynamic>) {
+          return AuthSessionModel.fromJson(json);
+        }
+
+        throw const FormatException('Invalid login response.');
+      },
+    );
+
+    final session = response.data;
+    if (session.accessToken.trim().isEmpty) {
+      throw const FormatException('Login response missing access token.');
     }
 
-    for (final user in dummyUsers) {
-      if (user.email == email && user.isActive) {
-        return user;
-      }
-    }
+    await _tokenStore.saveToken(session.accessToken, persist: remember);
+    return session.user;
+  }
 
-    return null;
+  Future<UserModel> me() async {
+    final response = await _apiClient.get<UserModel>(
+      '/auth/me',
+      parseData: (json) {
+        if (json is Map<String, dynamic>) {
+          return UserModel.fromJson(json);
+        }
+
+        throw const FormatException('Invalid current user response.');
+      },
+    );
+
+    return response.data;
+  }
+
+  Future<void> logout() async {
+    try {
+      await _apiClient.post<Object?>('/auth/logout', parseData: (_) => null);
+    } finally {
+      await _tokenStore.clear();
+    }
   }
 
   Future<UserModel?> register({
@@ -29,30 +69,31 @@ class AuthRepository {
     required String password,
     String? photoPath,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
+    final response = await _apiClient.post<UserModel>(
+      '/auth/register',
+      data: {
+        'name': name.trim(),
+        'email': email.trim().toLowerCase(),
+        'password': password,
+        'jabatan': position.trim(),
+      },
+      parseData: (json) {
+        if (json is Map<String, dynamic>) {
+          return UserModel.fromJson(json);
+        }
 
-    final normalizedEmail = email.trim().toLowerCase();
-    final emailTaken = dummyUsers.any(
-      (user) => user.email.toLowerCase() == normalizedEmail,
+        throw const FormatException('Invalid register response.');
+      },
     );
-    if (emailTaken) {
-      return null;
-    }
 
-    return UserModel(
-      id: 'employee-${DateTime.now().millisecondsSinceEpoch}',
-      name: name.trim(),
-      email: normalizedEmail,
-      role: UserRole.employee,
-      isActive: true,
-      jabatan: position.trim(),
-      photoId: photoPath,
-    );
+    return response.data;
   }
 
   Future<void> requestPasswordReset({required String email}) async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    // Dummy: tidak peduli email terdaftar atau tidak. Selalu sukses generik
-    // untuk menghindari user enumeration. Diganti API saat backend siap.
+    await _apiClient.post<Object?>(
+      '/auth/forgot-password',
+      data: {'email': email.trim().toLowerCase()},
+      parseData: (_) => null,
+    );
   }
 }

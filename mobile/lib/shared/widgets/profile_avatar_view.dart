@@ -22,21 +22,20 @@ class ProfileAvatarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = _imageProvider(photoPath);
+
     return Container(
       height: size,
       width: size,
       decoration: BoxDecoration(
         color: AppColors.canvasNeutral,
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        image: photoPath != null
-            ? DecorationImage(
-                image: FileImage(File(photoPath!)),
-                fit: BoxFit.cover,
-              )
+        image: imageProvider != null
+            ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
             : null,
       ),
       alignment: Alignment.center,
-      child: photoPath == null
+      child: imageProvider == null
           ? Text(
               initials,
               style:
@@ -67,5 +66,18 @@ class ProfileAvatarView extends StatelessWidget {
 
     return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
         .toUpperCase();
+  }
+
+  ImageProvider? _imageProvider(String? value) {
+    final path = value?.trim();
+    if (path == null || path.isEmpty) {
+      return null;
+    }
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return NetworkImage(path);
+    }
+
+    return FileImage(File(path));
   }
 }

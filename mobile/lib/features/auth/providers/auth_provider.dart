@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/enums/app_mode.dart';
 import '../../../core/enums/user_role.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../shared/providers/app_mode_provider.dart';
@@ -71,34 +72,65 @@ class AuthController extends Notifier<AuthState> {
       return;
     }
 
-    // The saved token is validated through /auth/me in Batch 3.
-    state = const AuthState.unauthenticated();
+    try {
+      final user = await ref.read(authRepositoryProvider).me();
+      _setModeForUser(user);
+      state = AuthState.authenticated(user: user);
+    } on ApiException catch (error) {
+      if (error.statusCode == 401) {
+        await ref.read(authTokenStoreProvider).clear();
+        state = const AuthState.unauthenticated();
+        return;
+      }
+
+      state = AuthState.unauthenticated(errorMessage: error.displayMessage);
+    } catch (_) {
+      state = const AuthState.unauthenticated(
+        errorMessage: 'Sesi tidak dapat dipulihkan. Silakan login kembali.',
+      );
+    }
   }
 
-  Future<bool> login({required String email, required String password}) async {
+  Future<bool> login({
+    required String email,
+    required String password,
+    required bool remember,
+  }) async {
     state = state.copyWith(
       status: AuthStatus.unauthenticated,
       isLoading: true,
       clearError: true,
     );
     final repository = ref.read(authRepositoryProvider);
-    final user = await repository.login(email: email, password: password);
 
-    if (user == null) {
+    try {
+      final user = await repository.login(
+        email: email,
+        password: password,
+        remember: remember,
+      );
+
+      if (user == null) {
+        state = const AuthState.unauthenticated(
+          errorMessage: 'Email atau password salah.',
+        );
+        return false;
+      }
+
+      _setModeForUser(user);
+      state = AuthState.authenticated(user: user);
+      return true;
+    } on ApiException catch (error) {
+      state = AuthState.unauthenticated(
+        errorMessage: _loginErrorMessage(error),
+      );
+      return false;
+    } catch (_) {
       state = const AuthState.unauthenticated(
-        errorMessage: 'Email atau password salah.',
+        errorMessage: 'Login gagal. Silakan coba lagi.',
       );
       return false;
     }
-
-    ref
-        .read(appModeProvider.notifier)
-        .setModeForRole(
-          role: user.role,
-          mode: user.role == UserRole.admin ? AppMode.admin : AppMode.employee,
-        );
-    state = AuthState.authenticated(user: user);
-    return true;
   }
 
   Future<bool> register({
@@ -114,40 +146,113 @@ class AuthController extends Notifier<AuthState> {
       clearError: true,
     );
     final repository = ref.read(authRepositoryProvider);
-    final user = await repository.register(
-      name: name,
-      email: email,
-      position: position,
-      password: password,
-      photoPath: photoPath,
-    );
 
-    if (user == null) {
+    try {
+      final user = await repository.register(
+        name: name,
+        email: email,
+        position: position,
+        password: password,
+        photoPath: photoPath,
+      );
+
+      if (user == null) {
+        state = const AuthState.unauthenticated(
+          errorMessage: 'Pendaftaran gagal. Silakan coba lagi.',
+        );
+        return false;
+      }
+
+      state = const AuthState.unauthenticated();
+      return true;
+    } on ApiException catch (error) {
+      state = AuthState.unauthenticated(
+        errorMessage: _registerErrorMessage(error),
+      );
+      return false;
+    } catch (_) {
       state = const AuthState.unauthenticated(
-        errorMessage: 'Email sudah terdaftar.',
+        errorMessage: 'Pendaftaran gagal. Silakan coba lagi.',
       );
       return false;
     }
-
-    state = const AuthState.unauthenticated();
-    return true;
   }
 
-  Future<void> requestPasswordReset({required String email}) async {
+  Future<bool> requestPasswordReset({required String email}) async {
     state = state.copyWith(
       status: AuthStatus.unauthenticated,
       isLoading: true,
       clearError: true,
     );
     final repository = ref.read(authRepositoryProvider);
-    await repository.requestPasswordReset(email: email);
-    state = state.copyWith(isLoading: false);
+
+    try {
+      await repository.requestPasswordReset(email: email);
+      state = const AuthState.unauthenticated();
+      return true;
+    } on ApiException catch (error) {
+      state = AuthState.unauthenticated(
+        errorMessage: _forgotPasswordErrorMessage(error),
+      );
+      return false;
+    } catch (_) {
+      state = const AuthState.unauthenticated(
+        errorMessage: 'Permintaan reset password gagal. Silakan coba lagi.',
+      );
+      return false;
+    }
   }
 
   Future<void> logout() async {
-    await ref.read(authTokenStoreProvider).clear();
+    try {
+      await ref.read(authRepositoryProvider).logout();
+    } catch (_) {
+      await ref.read(authTokenStoreProvider).clear();
+    }
     ref.read(appModeProvider.notifier).reset();
     state = const AuthState.unauthenticated();
+  }
+
+  void replaceCurrentUser(UserModel user) {
+    if (!state.isAuthenticated) {
+      return;
+    }
+
+    _setModeForUser(user);
+    state = AuthState.authenticated(user: user);
+  }
+
+  void _setModeForUser(UserModel user) {
+    ref
+        .read(appModeProvider.notifier)
+        .setModeForRole(
+          role: user.role,
+          mode: user.role == UserRole.admin ? AppMode.admin : AppMode.employee,
+        );
+  }
+
+  String _loginErrorMessage(ApiException error) {
+    return switch (error.statusCode) {
+      401 => 'Email atau password salah.',
+      403 => error.displayMessage,
+      422 => error.displayMessage,
+      _ => error.displayMessage,
+    };
+  }
+
+  String _registerErrorMessage(ApiException error) {
+    return switch (error.statusCode) {
+      409 => 'Email sudah terdaftar.',
+      422 => error.displayMessage,
+      _ => error.displayMessage,
+    };
+  }
+
+  String _forgotPasswordErrorMessage(ApiException error) {
+    return switch (error.statusCode) {
+      422 => error.displayMessage,
+      _ => error.displayMessage,
+    };
   }
 }
 

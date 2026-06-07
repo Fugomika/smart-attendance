@@ -199,7 +199,10 @@ class _LoginPlaceholderScreenState
                             variant: AppButtonVariant.secondary,
                             onPressed: authState.isLoading
                                 ? null
-                                : () => _quickLogin('admin@gmail.com'),
+                                : () => _quickLogin(
+                                    email: 'admin@gmail.com',
+                                    password: 'Admin123',
+                                  ),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
@@ -210,7 +213,10 @@ class _LoginPlaceholderScreenState
                             variant: AppButtonVariant.outline,
                             onPressed: authState.isLoading
                                 ? null
-                                : () => _quickLogin('user@gmail.com'),
+                                : () => _quickLogin(
+                                    email: 'user@gmail.com',
+                                    password: 'password',
+                                  ),
                           ),
                         ),
                       ],
@@ -297,7 +303,7 @@ class _LoginPlaceholderScreenState
 
     final success = await ref
         .read(authControllerProvider.notifier)
-        .login(email: email, password: password);
+        .login(email: email, password: password, remember: _isRemembered);
 
     if (!mounted) {
       return;
@@ -319,12 +325,15 @@ class _LoginPlaceholderScreenState
     );
   }
 
-  Future<void> _quickLogin(String email) async {
+  Future<void> _quickLogin({
+    required String email,
+    required String password,
+  }) async {
     FocusScope.of(context).unfocus();
 
     final success = await ref
         .read(authControllerProvider.notifier)
-        .login(email: email, password: 'password');
+        .login(email: email, password: password, remember: _isRemembered);
 
     if (!mounted) {
       return;

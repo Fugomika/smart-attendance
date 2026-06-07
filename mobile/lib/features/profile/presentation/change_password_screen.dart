@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
@@ -10,17 +11,19 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
+import '../providers/profile_controller.dart';
 
-class ChangePasswordScreen extends StatefulWidget {
+class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({required this.isAdminProfile, super.key});
 
   final bool isAdminProfile;
 
   @override
-  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -31,6 +34,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   String? _oldPasswordError;
   String? _newPasswordError;
   String? _confirmPasswordError;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -132,9 +136,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 AppButton(
-                  label: 'Simpan Password',
+                  label: _isSaving ? 'Menyimpan...' : 'Simpan Password',
                   icon: Icons.save_rounded,
-                  onPressed: _savePassword,
+                  onPressed: _isSaving ? null : _savePassword,
                 ),
               ],
             ),
@@ -144,7 +148,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  void _savePassword() {
+  Future<void> _savePassword() async {
     final oldPassword = _oldPasswordController.text;
     final newPassword = _newPasswordController.text;
     final confirmPassword = _confirmPasswordController.text;
@@ -171,7 +175,30 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    AppSnackBar.success(context, 'Password berhasil diperbarui.');
+    setState(() => _isSaving = true);
+
+    final result = await ref
+        .read(profileControllerProvider.notifier)
+        .changePassword(oldPassword: oldPassword, newPassword: newPassword);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _isSaving = false);
+
+    if (!result.isSuccess) {
+      AppSnackBar.error(
+        context,
+        result.message ?? 'Password gagal diperbarui.',
+      );
+      return;
+    }
+
+    AppSnackBar.success(
+      context,
+      result.message ?? 'Password berhasil diperbarui.',
+    );
     _goBack();
   }
 
