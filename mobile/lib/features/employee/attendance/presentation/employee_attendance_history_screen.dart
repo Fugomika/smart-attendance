@@ -11,6 +11,8 @@ import '../../../../core/utils/app_date_time_formatter.dart';
 import '../../../../shared/widgets/app_system_overlay.dart';
 import '../../../../shared/widgets/attendance_summary_card.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/loading_state.dart';
 import '../providers/employee_attendance_history_providers.dart';
 
 class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
@@ -20,8 +22,8 @@ class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final months = ref.watch(employeeAttendanceHistoryMonthsProvider);
     final selectedMonth = ref.watch(employeeAttendanceSelectedMonthProvider);
-    final activeMonth = selectedMonth ?? (months.isEmpty ? null : months.first);
-    final histories = ref.watch(employeeFilteredAttendanceHistoryProvider);
+    final activeMonth = selectedMonth ?? months.first;
+    final historiesAsync = ref.watch(employeeAttendanceHistoryProvider);
     final selectedMonthController = ref.read(
       employeeAttendanceSelectedMonthProvider.notifier,
     );
@@ -32,67 +34,85 @@ class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: months.isEmpty
-              ? const EmptyState(
-                  icon: Icons.work_history_rounded,
-                  title: 'Belum Ada Riwayat',
-                  message: 'Data presensi kamu akan muncul di sini.',
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Riwayat Absensi', style: AppTextStyles.h2),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Lihat ringkasan presensi berdasarkan bulan.',
-                        style: AppTextStyles.body.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _MonthFilter(
-                        months: months,
-                        activeMonth: activeMonth,
-                        onChanged: (value) {
-                          selectedMonthController.setMonth(value);
+          child: RefreshIndicator(
+            onRefresh: () =>
+                ref.refresh(employeeAttendanceHistoryProvider.future),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Riwayat Absensi', style: AppTextStyles.h2),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Lihat ringkasan presensi berdasarkan bulan.',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  _MonthFilter(
+                    months: months,
+                    activeMonth: activeMonth,
+                    onChanged: (value) {
+                      if (value != null) {
+                        selectedMonthController.setMonth(value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  historiesAsync.when(
+                    loading: () => const LoadingState(
+                      message: 'Mengambil riwayat presensi...',
+                    ),
+                    error: (error, stackTrace) => EmptyState(
+                      icon: Icons.cloud_off_rounded,
+                      title: 'Riwayat Belum Tersedia',
+                      message: 'Data riwayat presensi belum bisa dimuat.',
+                      action: AppButton(
+                        label: 'Coba Lagi',
+                        icon: Icons.refresh_rounded,
+                        size: AppButtonSize.medium,
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () {
+                          ref.invalidate(employeeAttendanceHistoryProvider);
                         },
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      if (histories.isEmpty)
-                        const EmptyState(
-                          icon: Icons.event_busy_rounded,
-                          title: 'Riwayat Kosong',
-                          message:
-                              'Tidak ada data presensi pada bulan yang dipilih.',
-                        )
-                      else
-                        ...histories.map((attendance) {
-                          final office = ref.watch(
-                            attendanceOfficeProvider(attendance.officeId),
-                          );
-
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppSpacing.md,
-                            ),
-                            child: AttendanceSummaryCard(
-                              attendance: attendance,
-                              officeName: office?.name ?? '-',
-                              onTap: () {
-                                context.push(
-                                  RouteNames.employeeAttendanceDetailPath(
-                                    attendance.id,
+                    ),
+                    data: (histories) => histories.isEmpty
+                        ? const EmptyState(
+                            icon: Icons.event_busy_rounded,
+                            title: 'Riwayat Kosong',
+                            message:
+                                'Tidak ada data presensi pada bulan yang dipilih.',
+                          )
+                        : Column(
+                            children: [
+                              for (final attendance in histories)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: AppSpacing.md,
                                   ),
-                                );
-                              },
-                            ),
-                          );
-                        }),
-                    ],
+                                  child: AttendanceSummaryCard(
+                                    attendance: attendance,
+                                    officeName: attendance.officeName ?? '-',
+                                    onTap: () {
+                                      context.push(
+                                        RouteNames.employeeAttendanceDetailPath(
+                                          attendance.id,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
                   ),
-                ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

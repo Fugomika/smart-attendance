@@ -1,24 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../data/models/attendance_model.dart';
-import '../../../data/models/office_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../auth/providers/auth_provider.dart';
 
-final todayAttendanceProvider = Provider<AttendanceModel?>((ref) {
+final todayAttendanceProvider = FutureProvider<AttendanceModel?>((ref) async {
   final user = ref.watch(currentUserProvider);
   if (user == null) {
     return null;
   }
 
-  return ref.watch(attendanceRepositoryProvider).getTodayAttendance(user.id);
-});
-
-final todayAttendanceOfficeProvider = Provider<OfficeModel?>((ref) {
-  final attendance = ref.watch(todayAttendanceProvider);
-  if (attendance == null) {
-    return null;
+  try {
+    return await ref
+        .watch(attendanceRepositoryProvider)
+        .getTodayAttendanceFromApi(userId: user.id);
+  } on ApiException catch (error) {
+    await expireSessionOnUnauthorized(ref, error);
+    rethrow;
   }
-
-  return ref.watch(officeRepositoryProvider).getOfficeById(attendance.officeId);
 });

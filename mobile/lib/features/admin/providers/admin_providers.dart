@@ -187,34 +187,21 @@ final adminEmployeeAttendanceHistoryProvider =
 
 final adminEmployeeAttendanceHistoryMonthsProvider =
     Provider.family<List<DateTime>, String>((ref, employeeId) {
-      final history = ref.watch(
-        adminEmployeeAttendanceHistoryProvider(employeeId),
-      );
-      final monthKeys = <String>{};
-      final months = <DateTime>[];
-
-      for (final attendance in history) {
-        final month = DateTime(
-          attendance.attendanceDate.year,
-          attendance.attendanceDate.month,
-        );
-        final key = '${month.year}-${month.month}';
-
-        if (monthKeys.add(key)) {
-          months.add(month);
-        }
-      }
-
-      months.sort((first, second) => second.compareTo(first));
-      return months;
+      final now = DateTime.now();
+      return List<DateTime>.generate(12, (index) {
+        return DateTime(now.year, now.month - index);
+      }, growable: false);
     });
 
 class AdminEmployeeSelectedMonthController extends Notifier<DateTime?> {
   @override
-  DateTime? build() => null;
+  DateTime? build() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month);
+  }
 
   void setMonth(DateTime? month) {
-    state = month;
+    state = month == null ? null : DateTime(month.year, month.month);
   }
 }
 
@@ -244,26 +231,19 @@ final adminFilteredEmployeeAttendanceHistoryProvider =
       final history = ref.watch(
         adminEmployeeAttendanceHistoryProvider(employeeId),
       );
-      final selectedMonth = ref.watch(adminEmployeeSelectedMonthProvider);
-      final availableMonths = ref.watch(
-        adminEmployeeAttendanceHistoryMonthsProvider(employeeId),
-      );
-      final activeMonth = _resolveAdminActiveMonth(
-        selectedMonth,
-        availableMonths,
-      );
+      final selectedMonth =
+          ref.watch(adminEmployeeSelectedMonthProvider) ??
+          ref
+              .watch(adminEmployeeAttendanceHistoryMonthsProvider(employeeId))
+              .first;
       final statusFilter = ref.watch(
         adminEmployeeAttendanceStatusFilterProvider,
       );
 
-      if (activeMonth == null) {
-        return const [];
-      }
-
       return history.where((attendance) {
         final sameMonth = AppDateTimeFormatter.isSameMonth(
           attendance.attendanceDate,
-          activeMonth,
+          selectedMonth,
         );
         final sameStatus =
             statusFilter == AdminAttendanceStatusFilter.all ||
@@ -321,20 +301,3 @@ final adminAttendanceActionProvider = Provider<AdminAttendanceActionService>((
     ref.read(attendanceStoreProvider.notifier),
   );
 });
-
-DateTime? _resolveAdminActiveMonth(
-  DateTime? selectedMonth,
-  List<DateTime> availableMonths,
-) {
-  if (selectedMonth == null) {
-    return availableMonths.isEmpty ? null : availableMonths.first;
-  }
-
-  for (final month in availableMonths) {
-    if (AppDateTimeFormatter.isSameMonth(month, selectedMonth)) {
-      return selectedMonth;
-    }
-  }
-
-  return availableMonths.isEmpty ? null : availableMonths.first;
-}

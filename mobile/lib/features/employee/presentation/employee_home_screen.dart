@@ -16,6 +16,8 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/attendance_info_row.dart';
+import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/loading_state.dart';
 import '../../../shared/widgets/profile_avatar_view.dart';
 import '../attendance/providers/clock_out_controller.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -42,8 +44,8 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final profile = ref.watch(profileControllerProvider);
-    final attendance = ref.watch(todayAttendanceProvider);
-    final office = ref.watch(todayAttendanceOfficeProvider);
+    final attendanceAsync = ref.watch(todayAttendanceProvider);
+    final attendance = attendanceAsync.hasValue ? attendanceAsync.value : null;
     final displayName = profile?.name ?? user?.name ?? 'Karyawan';
     final displayPhotoPath =
         profile?.photoPath ?? user?.photoUrl ?? user?.photoId;
@@ -61,8 +63,10 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
         effectiveAttendance?.attendanceDate ?? previewAttendanceDate;
     final viewData = EmployeeHomeStatusMapper.fromAttendance(
       effectiveAttendance,
-      locationLabel: _debugLocationLabel(office?.name),
+      locationLabel: _debugLocationLabel(attendance?.officeName),
     );
+    final showAttendanceContent =
+        !attendanceAsync.isLoading || attendanceAsync.hasValue;
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.background,
@@ -70,63 +74,85 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _HomeHeader(
-                  name: displayName,
-                  photoPath: displayPhotoPath,
-                  greeting: _greetingFor(
-                    attendanceDate,
-                    hour: _debugGreetingPreview.hour,
+          child: RefreshIndicator(
+            onRefresh: () => ref.refresh(todayAttendanceProvider.future),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HomeHeader(
+                    name: displayName,
+                    photoPath: displayPhotoPath,
+                    greeting: _greetingFor(
+                      attendanceDate,
+                      hour: _debugGreetingPreview.hour,
+                    ),
                   ),
-                ),
-                if (kDebugMode) ...[
-                  const SizedBox(height: AppSpacing.lg), //mmin
-                  _DebugPreviewPanel(
-                    attendancePreview: _debugAttendancePreview,
-                    greetingPreview: _debugGreetingPreview,
-                    onAttendanceChanged: (value) {
-                      setState(() {
-                        _debugAttendancePreview = value;
-                      });
-                    },
-                    onGreetingChanged: (value) {
-                      setState(() {
-                        _debugGreetingPreview = value;
-                      });
-                    },
-                    useLongLocation: _useLongDebugLocation,
-                    onLongLocationChanged: (value) {
-                      setState(() {
-                        _useLongDebugLocation = value;
-                      });
-                    },
-                  ),
+                  if (kDebugMode) ...[
+                    const SizedBox(height: AppSpacing.lg),
+                    _DebugPreviewPanel(
+                      attendancePreview: _debugAttendancePreview,
+                      greetingPreview: _debugGreetingPreview,
+                      onAttendanceChanged: (value) {
+                        setState(() {
+                          _debugAttendancePreview = value;
+                        });
+                      },
+                      onGreetingChanged: (value) {
+                        setState(() {
+                          _debugGreetingPreview = value;
+                        });
+                      },
+                      useLongLocation: _useLongDebugLocation,
+                      onLongLocationChanged: (value) {
+                        setState(() {
+                          _useLongDebugLocation = value;
+                        });
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
+                  if (attendanceAsync.hasError && !attendanceAsync.hasValue)
+                    _HomeErrorCard(
+                      onRetry: () => ref.invalidate(todayAttendanceProvider),
+                    )
+                  else if (!showAttendanceContent)
+                    const AppCard(
+                      child: SizedBox(
+                        height: 180,
+                        child: LoadingState(
+                          message: 'Mengambil presensi hari ini...',
+                        ),
+                      ),
+                    )
+                  else ...[
+                    _StatusCard(
+                      viewData: viewData,
+                      dateLabel: _formatDate(attendanceDate),
+                    ),
+                    if (viewData.hasCta) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      _AttendanceCtaCard(
+                        viewData: viewData,
+                        onPressed: () => _handleCta(
+                          context,
+                          viewData.cta!,
+                          effectiveAttendance,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.lg),
+                    _SummaryCard(viewData: viewData),
+                  ],
                 ],
-                const SizedBox(height: AppSpacing.lg), //main
-                _StatusCard(
-                  viewData: viewData,
-                  dateLabel: _formatDate(attendanceDate),
-                ),
-                if (viewData.hasCta) ...[
-                  const SizedBox(height: AppSpacing.lg), //main
-                  _AttendanceCtaCard(
-                    viewData: viewData,
-                    onPressed: () =>
-                        _handleCta(context, viewData.cta!, effectiveAttendance),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.lg), //main
-                _SummaryCard(viewData: viewData),
-              ],
+              ),
             ),
           ),
         ),
@@ -271,7 +297,7 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
 }
 
 enum _DebugAttendancePreview {
-  live('Dummy Data'),
+  live('Data API'),
   notCheckedIn('Belum Absen'),
   checkedIn('Sudah Masuk'),
   checkedInOutside('Di Luar Kantor'),
@@ -430,10 +456,7 @@ class _HomeHeader extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadius.pill),
               onTap: () {
-                AppSnackBar.info(
-                  context,
-                  'Notifikasi akan dibuat di batch nanti.',
-                );
+                AppSnackBar.info(context, 'Belum ada notifikasi baru.');
               },
               child: const Center(
                 child: Icon(
@@ -790,6 +813,30 @@ class _SummaryCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HomeErrorCard extends StatelessWidget {
+  const _HomeErrorCard({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: EmptyState(
+        icon: Icons.cloud_off_rounded,
+        title: 'Presensi Belum Tersedia',
+        message: 'Data presensi hari ini belum bisa dimuat.',
+        action: AppButton(
+          label: 'Coba Lagi',
+          icon: Icons.refresh_rounded,
+          size: AppButtonSize.medium,
+          variant: AppButtonVariant.secondary,
+          onPressed: onRetry,
+        ),
       ),
     );
   }

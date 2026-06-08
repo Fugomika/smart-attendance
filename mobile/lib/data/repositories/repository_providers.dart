@@ -66,7 +66,7 @@ class AttendanceStoreController extends Notifier<List<AttendanceModel>> {
     required String? outsideReason,
     required String clockInPhotoId,
   }) async {
-    final repository = AttendanceRepository(state);
+    final repository = AttendanceRepository(attendances: state);
     final submitted = await repository.clockIn(
       userId: userId,
       officeId: officeId,
@@ -98,7 +98,7 @@ class AttendanceStoreController extends Notifier<List<AttendanceModel>> {
     required String attendanceId,
     required DateTime clockOutTime,
   }) async {
-    final repository = AttendanceRepository(state);
+    final repository = AttendanceRepository(attendances: state);
     final submitted = await repository.clockOut(
       attendanceId: attendanceId,
       clockOutTime: clockOutTime,
@@ -116,7 +116,7 @@ class AttendanceStoreController extends Notifier<List<AttendanceModel>> {
     required String attendanceId,
     required AttendanceStatus targetStatus,
   }) async {
-    final repository = AttendanceRepository(state);
+    final repository = AttendanceRepository(attendances: state);
     final submitted = await repository.validateAttendance(
       attendanceId: attendanceId,
       targetStatus: targetStatus,
@@ -145,7 +145,10 @@ final attendanceStoreProvider =
     );
 
 final attendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
-  return AttendanceRepository(ref.watch(attendanceStoreProvider));
+  return AttendanceRepository(
+    attendances: ref.watch(attendanceStoreProvider),
+    apiClient: ref.watch(apiClientProvider),
+  );
 });
 
 class OfficeStoreController extends Notifier<List<OfficeModel>> {
@@ -182,7 +185,10 @@ final officeStoreProvider =
     );
 
 final officeRepositoryProvider = Provider<OfficeRepository>((ref) {
-  return OfficeRepository(ref.watch(officeStoreProvider));
+  return OfficeRepository(
+    apiClient: ref.watch(apiClientProvider),
+    offices: ref.watch(officeStoreProvider),
+  );
 });
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {

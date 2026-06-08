@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../../core/network/api_exception.dart';
 import '../../../../data/models/office_model.dart';
 import '../../../../data/repositories/repository_providers.dart';
 import '../../../../data/services/location_service.dart';
+import '../../../auth/providers/auth_provider.dart';
 import '../models/location_validation_state.dart';
 
 final locationServiceProvider = Provider<LocationService>((ref) {
@@ -20,41 +22,32 @@ class LocationValidationController extends Notifier<LocationValidationState> {
 
   @override
   LocationValidationState build() {
-    final office = ref.watch(officeRepositoryProvider).getPrimaryOffice();
-
-    return LocationValidationState(
+    return const LocationValidationState(
       status: LocationValidationStatus.loading,
-      office: office,
       message: 'Mencari lokasi Anda...',
     );
   }
 
   Future<void> refresh() async {
-    final office = ref.read(officeRepositoryProvider).getPrimaryOffice();
-    if (office == null) {
-      state = const LocationValidationState(
-        status: LocationValidationStatus.locationError,
-        message: 'Data kantor belum tersedia.',
-      );
-      return;
-    }
-
-    state = LocationValidationState(
+    state = const LocationValidationState(
       status: LocationValidationStatus.loading,
-      office: office,
-      message: 'Mencari lokasi Anda...',
+      message: 'Mengambil data kantor...',
     );
 
     try {
+      final office = await ref.read(officeRepositoryProvider).getActiveOffice();
+      state = LocationValidationState(
+        status: LocationValidationStatus.loading,
+        office: office,
+        message: 'Mencari lokasi Anda...',
+      );
+
       final location = await ref
           .read(locationServiceProvider)
           .getCurrentLocation();
-      state = _validatedState(
-        office: office,
-        userLocation: location,
-        isFallback: false,
-      );
+      state = _validatedState(office: office, userLocation: location);
     } on LocationFailure catch (error) {
+      final currentOffice = state.office;
       state = LocationValidationState(
         status: switch (error.type) {
           LocationFailureType.serviceDisabled =>
@@ -63,43 +56,33 @@ class LocationValidationController extends Notifier<LocationValidationState> {
             LocationValidationStatus.permissionDenied,
           LocationFailureType.unknown => LocationValidationStatus.locationError,
         },
-        office: office,
+        office: currentOffice,
         message: error.message,
       );
-    }
-  }
+    } on ApiException catch (error) {
+      if (await expireSessionOnUnauthorized(ref, error)) {
+        state = const LocationValidationState(
+          status: LocationValidationStatus.locationError,
+          message: 'Sesi berakhir. Silakan login kembali.',
+        );
+        return;
+      }
 
-  void useFallbackLocation() {
-    final office =
-        state.office ?? ref.read(officeRepositoryProvider).getPrimaryOffice();
-    if (office == null) {
+      state = LocationValidationState(
+        status: LocationValidationStatus.locationError,
+        message: _officeErrorMessage(error),
+      );
+    } catch (_) {
       state = const LocationValidationState(
         status: LocationValidationStatus.locationError,
-        message: 'Data kantor belum tersedia.',
+        message: 'Data kantor aktif gagal dimuat. Coba lagi.',
       );
-      return;
     }
-
-    final fallbackLocation = LatLng(
-      office.latitude + 0.00035,
-      office.longitude + 0.00025,
-    );
-
-    state =
-        _validatedState(
-          office: office,
-          userLocation: fallbackLocation,
-          isFallback: true,
-        ).copyWith(
-          message:
-              'Menggunakan lokasi preview karena lokasi real belum tersedia.',
-        );
   }
 
   LocationValidationState _validatedState({
     required OfficeModel office,
     required LatLng userLocation,
-    required bool isFallback,
   }) {
     final officeLocation = LatLng(office.latitude, office.longitude);
     final distanceMeters = _distance.as(
@@ -116,7 +99,14 @@ class LocationValidationController extends Notifier<LocationValidationState> {
       office: office,
       userLocation: userLocation,
       distanceMeters: distanceMeters,
-      isFallback: isFallback,
     );
+  }
+
+  String _officeErrorMessage(ApiException error) {
+    return switch (error.statusCode) {
+      404 => 'Data kantor aktif belum tersedia.',
+      403 => 'Anda tidak memiliki akses untuk mengambil data kantor.',
+      _ => error.displayMessage,
+    };
   }
 }

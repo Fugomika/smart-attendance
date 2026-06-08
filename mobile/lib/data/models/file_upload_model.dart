@@ -1,3 +1,5 @@
+import '../../core/utils/api_date_time_parser.dart';
+
 class FileUploadModel {
   const FileUploadModel({
     required this.id,
@@ -17,7 +19,7 @@ class FileUploadModel {
       context: json['context']?.toString() ?? '',
       url: json['url']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
+      createdAt: ApiDateTimeParser.timestamp(json['createdAt']),
     );
   }
 

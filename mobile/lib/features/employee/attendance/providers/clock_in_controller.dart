@@ -1,10 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_exception.dart';
 import '../../../../data/models/attendance_model.dart';
 import '../../../../data/repositories/repository_providers.dart';
+import '../../providers/employee_providers.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../models/attendance_selfie_result.dart';
+import 'employee_attendance_history_providers.dart';
 
 enum ClockInSubmitStatus { idle, submitting, success, error }
 
@@ -53,30 +56,40 @@ class ClockInController extends Notifier<ClockInSubmitState> {
     state = const ClockInSubmitState(status: ClockInSubmitStatus.submitting);
 
     try {
-      final now = DateTime.now();
       final locationResult = result.locationResult;
+      final uploadedSelfie = await ref
+          .read(fileRepositoryProvider)
+          .uploadAttendanceSelfie(selfiePath);
       final attendance = await ref
-          .read(attendanceStoreProvider.notifier)
-          .clockIn(
+          .read(attendanceRepositoryProvider)
+          .clockInToApi(
             userId: user.id,
             officeId: locationResult.office.id,
-            attendanceDate: now,
-            clockInTime: now,
             clockInLat: locationResult.userLocation.latitude,
             clockInLng: locationResult.userLocation.longitude,
             isOutside: locationResult.isOutside,
             outsideReason: locationResult.isOutside
                 ? locationResult.outsideReason?.trim()
                 : null,
-            clockInPhotoId: selfiePath,
+            clockInPhotoId: uploadedSelfie.id,
           );
 
+      ref.invalidate(todayAttendanceProvider);
+      ref.invalidate(employeeAttendanceHistoryProvider);
       state = ClockInSubmitState(
         status: ClockInSubmitStatus.success,
         attendance: attendance,
         message: 'Absen masuk berhasil disimpan.',
       );
       return attendance;
+    } on ApiException catch (error) {
+      await expireSessionOnUnauthorized(ref, error);
+
+      state = ClockInSubmitState(
+        status: ClockInSubmitStatus.error,
+        message: _clockInErrorMessage(error),
+      );
+      return null;
     } catch (_) {
       state = const ClockInSubmitState(
         status: ClockInSubmitStatus.error,
@@ -84,6 +97,16 @@ class ClockInController extends Notifier<ClockInSubmitState> {
       );
       return null;
     }
+  }
+
+  String _clockInErrorMessage(ApiException error) {
+    return switch (error.statusCode) {
+      401 => 'Sesi berakhir. Silakan login kembali.',
+      404 => 'Data kantor atau foto selfie tidak ditemukan.',
+      409 => 'Kamu sudah absen masuk hari ini.',
+      422 => error.displayMessage,
+      _ => error.displayMessage,
+    };
   }
 }
 

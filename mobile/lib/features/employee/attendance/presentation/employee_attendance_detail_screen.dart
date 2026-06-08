@@ -20,6 +20,7 @@ import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_system_overlay.dart';
 import '../../../../shared/widgets/attendance_info_row.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/loading_state.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../providers/employee_attendance_history_providers.dart';
 
@@ -30,12 +31,9 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final attendance = ref.watch(
+    final attendanceAsync = ref.watch(
       employeeAttendanceDetailProvider(attendanceId),
     );
-    final office = attendance == null
-        ? null
-        : ref.watch(attendanceOfficeProvider(attendance.officeId));
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.surface,
@@ -54,40 +52,69 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
           title: Text('Detail Presensi', style: AppTextStyles.h2),
         ),
         body: SafeArea(
-          child: attendance == null
-              ? const EmptyState(
-                  icon: Icons.event_busy_rounded,
-                  title: 'Data Tidak Ditemukan',
-                  message: 'Detail presensi ini tidak tersedia.',
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _StatusOverview(attendance: attendance),
-                      const SizedBox(height: AppSpacing.lg),
-                      _AttendanceDetailCard(
-                        attendance: attendance,
-                        office: office,
+          child: attendanceAsync.when(
+            loading: () =>
+                const LoadingState(message: 'Mengambil detail presensi...'),
+            error: (error, stackTrace) => EmptyState(
+              icon: Icons.cloud_off_rounded,
+              title: 'Detail Belum Tersedia',
+              message: 'Detail presensi belum bisa dimuat.',
+              action: AppButton(
+                label: 'Coba Lagi',
+                icon: Icons.refresh_rounded,
+                size: AppButtonSize.medium,
+                variant: AppButtonVariant.secondary,
+                onPressed: () {
+                  ref.invalidate(
+                    employeeAttendanceDetailProvider(attendanceId),
+                  );
+                },
+              ),
+            ),
+            data: (attendance) => attendance == null
+                ? const EmptyState(
+                    icon: Icons.event_busy_rounded,
+                    title: 'Data Tidak Ditemukan',
+                    message: 'Detail presensi ini tidak tersedia.',
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => ref.refresh(
+                      employeeAttendanceDetailProvider(attendanceId).future,
+                    ),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _StatusOverview(attendance: attendance),
+                          const SizedBox(height: AppSpacing.lg),
+                          _AttendanceDetailCard(
+                            attendance: attendance,
+                            office: null,
+                          ),
+                          if (_shouldShowOutsideReason(attendance)) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            _OutsideReasonCard(
+                              reason: attendance.outsideReason!,
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.lg),
+                          _SelfiePlaceholderCard(
+                            photoId: attendance.clockInPhotoId,
+                            selfieUrl: attendance.selfieUrl,
+                          ),
+                          if (_shouldShowAdminValidationInfo(
+                            attendance.status,
+                          )) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            _AdminValidationInfoCard(status: attendance.status),
+                          ],
+                        ],
                       ),
-                      if (_shouldShowOutsideReason(attendance)) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        _OutsideReasonCard(reason: attendance.outsideReason!),
-                      ],
-                      const SizedBox(height: AppSpacing.lg),
-                      _SelfiePlaceholderCard(
-                        photoId: attendance.clockInPhotoId,
-                      ),
-                      if (_shouldShowAdminValidationInfo(
-                        attendance.status,
-                      )) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        _AdminValidationInfoCard(status: attendance.status),
-                      ],
-                    ],
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );
@@ -297,13 +324,18 @@ class _OutsideReasonCard extends StatelessWidget {
 }
 
 class _SelfiePlaceholderCard extends StatelessWidget {
-  const _SelfiePlaceholderCard({required this.photoId});
+  const _SelfiePlaceholderCard({
+    required this.photoId,
+    required this.selfieUrl,
+  });
 
   final String? photoId;
+  final String? selfieUrl;
 
   @override
   Widget build(BuildContext context) {
     final hasPhoto = photoId != null && photoId!.trim().isNotEmpty;
+    final hasSelfieUrl = selfieUrl != null && selfieUrl!.trim().isNotEmpty;
 
     return AppCard(
       child: Column(
@@ -319,25 +351,60 @@ class _SelfiePlaceholderCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.large),
               border: Border.all(color: AppColors.border),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.photo_camera_outlined,
-                  size: 44,
-                  color: AppColors.textMuted,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  hasPhoto ? 'Placeholder foto: $photoId' : 'Foto belum ada',
-                  style: AppTextStyles.caption,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasSelfieUrl
+                ? Image.network(
+                    selfieUrl!,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
+                      }
+
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return _SelfieEmptyState(
+                        message: hasPhoto
+                            ? 'Foto belum bisa dimuat.'
+                            : 'Foto belum ada',
+                      );
+                    },
+                  )
+                : _SelfieEmptyState(
+                    message: hasPhoto
+                        ? 'Foto belum bisa dimuat.'
+                        : 'Foto belum ada',
+                  ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SelfieEmptyState extends StatelessWidget {
+  const _SelfieEmptyState({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.photo_camera_outlined,
+          size: 44,
+          color: AppColors.textMuted,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          message,
+          style: AppTextStyles.caption,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
@@ -359,7 +426,7 @@ class _AdminValidationInfoCard extends StatelessWidget {
         icon: isRejected ? Icons.cancel_outlined : Icons.hourglass_top_rounded,
         label: 'Validasi Admin',
         value: isRejected
-            ? 'Presensi ditolak oleh admin. Catatan detail belum tersedia di data dummy.'
+            ? 'Presensi ditolak oleh admin. Catatan penolakan belum tersedia.'
             : 'Presensi sedang menunggu validasi admin.',
         valueColor: isRejected ? AppColors.dangerDark : AppColors.warningDark,
       ),

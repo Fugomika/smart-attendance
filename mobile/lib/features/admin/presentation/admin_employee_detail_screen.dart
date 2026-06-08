@@ -32,8 +32,8 @@ class AdminEmployeeDetailScreen extends ConsumerWidget {
       adminEmployeeAttendanceHistoryMonthsProvider(employeeId),
     );
     final selectedMonth = ref.watch(adminEmployeeSelectedMonthProvider);
+    final activeMonth = selectedMonth ?? months.first;
     final statusFilter = ref.watch(adminEmployeeAttendanceStatusFilterProvider);
-    final activeMonth = selectedMonth ?? (months.isEmpty ? null : months.first);
     final histories = ref.watch(
       adminFilteredEmployeeAttendanceHistoryProvider(employeeId),
     );
@@ -68,49 +68,42 @@ class AdminEmployeeDetailScreen extends ConsumerWidget {
                     children: [
                       _EmployeeProfileSummary(employee: employee),
                       const SizedBox(height: AppSpacing.lg),
-                      if (months.isNotEmpty) ...[
-                        Text(
-                          'Riwayat Presensi',
-                          style: AppTextStyles.h3.copyWith(fontSize: 20),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        _MonthFilter(
-                          months: months,
-                          activeMonth: activeMonth,
-                          onChanged: (value) {
-                            ref
-                                .read(
-                                  adminEmployeeSelectedMonthProvider.notifier,
-                                )
-                                .setMonth(value);
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _StatusFilterDropdown(
-                          value: statusFilter,
-                          onChanged: (value) {
-                            if (value == null) {
-                              return;
-                            }
+                      Text(
+                        'Riwayat Presensi',
+                        style: AppTextStyles.h3.copyWith(fontSize: 20),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _MonthFilter(
+                        months: months,
+                        activeMonth: activeMonth,
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
 
-                            ref
-                                .read(
-                                  adminEmployeeAttendanceStatusFilterProvider
-                                      .notifier,
-                                )
-                                .setFilter(value);
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                      ],
-                      if (months.isEmpty)
-                        const EmptyState(
-                          icon: Icons.work_history_rounded,
-                          title: 'Belum Ada Riwayat',
-                          message:
-                              'Riwayat presensi karyawan akan muncul di sini.',
-                        )
-                      else if (histories.isEmpty)
+                          ref
+                              .read(adminEmployeeSelectedMonthProvider.notifier)
+                              .setMonth(value);
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _StatusFilterDropdown(
+                        value: statusFilter,
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+
+                          ref
+                              .read(
+                                adminEmployeeAttendanceStatusFilterProvider
+                                    .notifier,
+                              )
+                              .setFilter(value);
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      if (histories.isEmpty)
                         const EmptyState(
                           icon: Icons.event_busy_rounded,
                           title: 'Riwayat Kosong',

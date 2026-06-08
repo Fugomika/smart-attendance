@@ -96,6 +96,9 @@ trait ApiResponse
     protected function formatAttendanceDetail(Attendance $att): array
     {
         return array_merge($this->formatAttendanceToday($att), [
+            'officeLatitude' => $att->office?->latitude !== null ? (float) $att->office->latitude : null,
+            'officeLongitude' => $att->office?->longitude !== null ? (float) $att->office->longitude : null,
+            'officeRadiusMeter' => $att->office?->radiusMeter !== null ? (int) $att->office->radiusMeter : null,
             'createdAt' => $this->wib($att->created_at),
             'updatedAt' => $this->wib($att->updated_at),
         ]);

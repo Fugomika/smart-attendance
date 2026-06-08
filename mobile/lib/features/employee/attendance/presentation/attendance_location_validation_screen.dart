@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +29,7 @@ class AttendanceLocationValidationScreen extends ConsumerStatefulWidget {
 
 class _AttendanceLocationValidationScreenState
     extends ConsumerState<AttendanceLocationValidationScreen> {
-  static const int _outsideReasonMaxLength = 500;
+  static const int _outsideReasonMaxLength = 255;
 
   final MapController _mapController = MapController();
   LatLng? _lastAutoFitUserLocation;
@@ -104,11 +103,6 @@ class _AttendanceLocationValidationScreenState
                     ref
                         .read(locationValidationControllerProvider.notifier)
                         .refresh();
-                  },
-                  onUseFallback: () {
-                    ref
-                        .read(locationValidationControllerProvider.notifier)
-                        .useFallbackLocation();
                   },
                   onContinue: () => _handleContinue(context, state),
                   onFocusBoth: () => _fitVisiblePoints(mapPoints),
@@ -537,7 +531,6 @@ class _LocationStatusCard extends StatelessWidget {
   const _LocationStatusCard({
     required this.state,
     required this.onRetry,
-    required this.onUseFallback,
     required this.onContinue,
     required this.onFocusBoth,
     required this.onFocusOffice,
@@ -546,7 +539,6 @@ class _LocationStatusCard extends StatelessWidget {
 
   final LocationValidationState state;
   final VoidCallback onRetry;
-  final VoidCallback onUseFallback;
   final VoidCallback onContinue;
   final VoidCallback onFocusBoth;
   final VoidCallback onFocusOffice;
@@ -599,15 +591,6 @@ class _LocationStatusCard extends StatelessWidget {
               ),
             ],
           ),
-          if (state.isFallback) ...[
-            const SizedBox(height: AppSpacing.sm),
-            _InlineNotice(
-              icon: Icons.info_outline_rounded,
-              label:
-                  'Mode preview hanya untuk melihat tampilan, bukan untuk mengirim presensi.',
-              color: AppColors.warningDark,
-            ),
-          ],
           const SizedBox(height: AppSpacing.md),
           _OfficeInfoGrid(state: state),
           const SizedBox(height: AppSpacing.md),
@@ -633,35 +616,12 @@ class _LocationStatusCard extends StatelessWidget {
               onPressed: onContinue,
             )
           else
-            kDebugMode
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: AppButton(
-                          label: 'Coba Lagi',
-                          icon: Icons.refresh_rounded,
-                          size: AppButtonSize.medium,
-                          onPressed: onRetry,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: AppButton(
-                          label: 'Preview',
-                          icon: Icons.map_rounded,
-                          size: AppButtonSize.medium,
-                          variant: AppButtonVariant.secondary,
-                          onPressed: onUseFallback,
-                        ),
-                      ),
-                    ],
-                  )
-                : AppButton(
-                    label: 'Coba Lagi',
-                    icon: Icons.refresh_rounded,
-                    size: AppButtonSize.medium,
-                    onPressed: onRetry,
-                  ),
+            AppButton(
+              label: 'Coba Lagi',
+              icon: Icons.refresh_rounded,
+              size: AppButtonSize.medium,
+              onPressed: onRetry,
+            ),
         ],
       ),
     );
@@ -1021,44 +981,6 @@ class _LoadingLocation extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _InlineNotice extends StatelessWidget {
-  const _InlineNotice({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: color.withAlpha(24),
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

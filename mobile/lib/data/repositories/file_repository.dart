@@ -12,6 +12,10 @@ class FileRepository {
     return _upload(filePath: filePath, context: 'profile_photo');
   }
 
+  Future<FileUploadModel> uploadAttendanceSelfie(String filePath) {
+    return _upload(filePath: filePath, context: 'attendance_selfie');
+  }
+
   Future<FileUploadModel> _upload({
     required String filePath,
     required String context,
@@ -41,6 +45,6 @@ class FileRepository {
     final normalized = path.replaceAll('\\', '/');
     final segments = normalized.split('/');
     final fileName = segments.isNotEmpty ? segments.last : '';
-    return fileName.trim().isEmpty ? 'profile-photo.jpg' : fileName;
+    return fileName.trim().isEmpty ? 'upload.jpg' : fileName;
   }
 }

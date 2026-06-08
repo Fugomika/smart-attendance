@@ -213,12 +213,22 @@ class AuthController extends Notifier<AuthState> {
     state = const AuthState.unauthenticated();
   }
 
+  Future<void> expireSession() async {
+    await ref.read(authTokenStoreProvider).clear();
+    ref.read(appModeProvider.notifier).reset();
+    state = const AuthState.unauthenticated(
+      errorMessage: 'Sesi berakhir. Silakan login kembali.',
+    );
+  }
+
   void replaceCurrentUser(UserModel user) {
     if (!state.isAuthenticated) {
       return;
     }
 
-    _setModeForUser(user);
+    if (state.user?.role != user.role) {
+      _setModeForUser(user);
+    }
     state = AuthState.authenticated(user: user);
   }
 
@@ -263,3 +273,12 @@ final authControllerProvider = NotifierProvider<AuthController, AuthState>(
 final currentUserProvider = Provider<UserModel?>((ref) {
   return ref.watch(authControllerProvider).user;
 });
+
+Future<bool> expireSessionOnUnauthorized(Ref ref, ApiException error) async {
+  if (error.statusCode != 401) {
+    return false;
+  }
+
+  await ref.read(authControllerProvider.notifier).expireSession();
+  return true;
+}

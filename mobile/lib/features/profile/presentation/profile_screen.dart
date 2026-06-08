@@ -54,72 +54,78 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _ProfileCard(
-                                profile: profile,
-                                onEdit: () {
-                                  context.push(
-                                    isAdminProfile
-                                        ? RouteNames.adminProfileEdit
-                                        : RouteNames.employeeProfileEdit,
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                              _ProfileMenuGroup(
-                                items: [
-                                  _ProfileMenuItem(
-                                    icon: Icons.lock_outline_rounded,
-                                    label: 'Ubah Password',
-                                    onTap: () {
-                                      context.push(
-                                        isAdminProfile
-                                            ? RouteNames
-                                                  .adminProfileChangePassword
-                                            : RouteNames
-                                                  .employeeProfileChangePassword,
-                                      );
-                                    },
-                                  ),
-                                  if (isAdminProfile &&
-                                      profile.role == UserRole.admin)
-                                    _ProfileMenuItem(
-                                      icon: Icons.business_rounded,
-                                      label: 'Setting Lokasi Kantor',
-                                      onTap: () {
-                                        context.push(
-                                          RouteNames.adminProfileOfficeLocation,
-                                        );
-                                      },
-                                    ),
-                                  _ProfileMenuItem(
-                                    icon: Icons.info_outline_rounded,
-                                    label: 'Tentang Aplikasi',
-                                    onTap: () => _showAboutSheet(context),
-                                  ),
-                                ],
-                              ),
-                              if (_showSwitchMode(profile, appMode)) ...[
-                                const SizedBox(height: AppSpacing.md),
+                        child: RefreshIndicator(
+                          onRefresh: () => _refreshProfile(context, ref),
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _ProfileCard(
+                                  profile: profile,
+                                  onEdit: () {
+                                    context.push(
+                                      isAdminProfile
+                                          ? RouteNames.adminProfileEdit
+                                          : RouteNames.employeeProfileEdit,
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: AppSpacing.lg),
                                 _ProfileMenuGroup(
                                   items: [
                                     _ProfileMenuItem(
-                                      icon: isAdminProfile
-                                          ? Icons.badge_outlined
-                                          : Icons.admin_panel_settings_outlined,
-                                      label: isAdminProfile
-                                          ? 'Beralih ke Mode Karyawan'
-                                          : 'Kembali ke Mode Admin',
-                                      onTap: () => _switchMode(context, ref),
+                                      icon: Icons.lock_outline_rounded,
+                                      label: 'Ubah Password',
+                                      onTap: () {
+                                        context.push(
+                                          isAdminProfile
+                                              ? RouteNames
+                                                    .adminProfileChangePassword
+                                              : RouteNames
+                                                    .employeeProfileChangePassword,
+                                        );
+                                      },
+                                    ),
+                                    if (isAdminProfile &&
+                                        profile.role == UserRole.admin)
+                                      _ProfileMenuItem(
+                                        icon: Icons.business_rounded,
+                                        label: 'Setting Lokasi Kantor',
+                                        onTap: () {
+                                          context.push(
+                                            RouteNames
+                                                .adminProfileOfficeLocation,
+                                          );
+                                        },
+                                      ),
+                                    _ProfileMenuItem(
+                                      icon: Icons.info_outline_rounded,
+                                      label: 'Tentang Aplikasi',
+                                      onTap: () => _showAboutSheet(context),
                                     ),
                                   ],
                                 ),
+                                if (_showSwitchMode(profile, appMode)) ...[
+                                  const SizedBox(height: AppSpacing.md),
+                                  _ProfileMenuGroup(
+                                    items: [
+                                      _ProfileMenuItem(
+                                        icon: isAdminProfile
+                                            ? Icons.badge_outlined
+                                            : Icons
+                                                  .admin_panel_settings_outlined,
+                                        label: isAdminProfile
+                                            ? 'Beralih ke Mode Karyawan'
+                                            : 'Kembali ke Mode Admin',
+                                        onTap: () => _switchMode(context, ref),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                const SizedBox(height: AppSpacing.xl),
                               ],
-                              const SizedBox(height: AppSpacing.xl),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -153,6 +159,18 @@ class ProfileScreen extends ConsumerWidget {
 
     return isAdminProfile && appMode == AppMode.admin ||
         !isAdminProfile && appMode == AppMode.employee;
+  }
+
+  Future<void> _refreshProfile(BuildContext context, WidgetRef ref) async {
+    final result = await ref
+        .read(profileControllerProvider.notifier)
+        .refreshProfile();
+    if (!result.isSuccess && context.mounted) {
+      AppSnackBar.error(
+        context,
+        result.message ?? 'Profil gagal dimuat ulang.',
+      );
+    }
   }
 
   void _switchMode(BuildContext context, WidgetRef ref) {

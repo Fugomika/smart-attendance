@@ -26,8 +26,9 @@ class AttendanceLocationDetail {
     final userLng = attendance.clockInLng;
     final hasUserCoordinate = userLat != null && userLng != null;
 
-    final officeLat = office?.latitude;
-    final officeLng = office?.longitude;
+    final officeLat = attendance.officeLatitude ?? office?.latitude;
+    final officeLng = attendance.officeLongitude ?? office?.longitude;
+    final officeRadius = attendance.officeRadiusMeter ?? office?.radiusMeters;
     final hasOfficeCoordinate = officeLat != null && officeLng != null;
 
     final distanceMeters = hasUserCoordinate && hasOfficeCoordinate
@@ -38,9 +39,14 @@ class AttendanceLocationDetail {
           )
         : null;
 
+    final attendanceOfficeName = attendance.officeName?.trim();
+
     return AttendanceLocationDetail(
-      officeName: office?.name ?? '-',
-      radiusLabel: office == null ? '-' : _formatDistance(office.radiusMeters),
+      officeName:
+          attendanceOfficeName != null && attendanceOfficeName.isNotEmpty
+          ? attendanceOfficeName
+          : office?.name ?? '-',
+      radiusLabel: officeRadius == null ? '-' : _formatDistance(officeRadius),
       coordinateLabel: hasUserCoordinate
           ? '${userLat.toStringAsFixed(6)}, ${userLng.toStringAsFixed(6)}'
           : '-',

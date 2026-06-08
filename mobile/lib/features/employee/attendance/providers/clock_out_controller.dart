@@ -2,8 +2,12 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/enums/attendance_status.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../data/models/attendance_model.dart';
 import '../../../../data/repositories/repository_providers.dart';
+import '../../providers/employee_providers.dart';
+import '../../../auth/providers/auth_provider.dart';
+import 'employee_attendance_history_providers.dart';
 
 enum ClockOutSubmitStatus { idle, submitting, success, error }
 
@@ -42,10 +46,22 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
     state = const ClockOutSubmitState(status: ClockOutSubmitStatus.submitting);
 
     try {
-      final submitted = await ref
-          .read(attendanceStoreProvider.notifier)
-          .clockOut(attendanceId: attendance.id, clockOutTime: DateTime.now());
+      final user = ref.read(currentUserProvider);
+      if (user == null) {
+        state = const ClockOutSubmitState(
+          status: ClockOutSubmitStatus.error,
+          message: 'Sesi pengguna tidak tersedia. Silakan login ulang.',
+        );
+        return null;
+      }
 
+      final submitted = await ref
+          .read(attendanceRepositoryProvider)
+          .clockOutToApi(attendanceId: attendance.id, userId: user.id);
+
+      ref.invalidate(todayAttendanceProvider);
+      ref.invalidate(employeeAttendanceHistoryProvider);
+      ref.invalidate(employeeAttendanceDetailProvider(attendance.id));
       state = ClockOutSubmitState(
         status: ClockOutSubmitStatus.success,
         attendance: submitted,
@@ -54,6 +70,14 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
             : 'Absen pulang berhasil disimpan.',
       );
       return submitted;
+    } on ApiException catch (error) {
+      await expireSessionOnUnauthorized(ref, error);
+
+      state = ClockOutSubmitState(
+        status: ClockOutSubmitStatus.error,
+        message: _clockOutErrorMessage(error),
+      );
+      return null;
     } catch (_) {
       state = const ClockOutSubmitState(
         status: ClockOutSubmitStatus.error,
@@ -61,6 +85,17 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
       );
       return null;
     }
+  }
+
+  String _clockOutErrorMessage(ApiException error) {
+    return switch (error.statusCode) {
+      400 => error.displayMessage,
+      401 => 'Sesi berakhir. Silakan login kembali.',
+      403 => 'Presensi ini tidak dapat diakses oleh akun kamu.',
+      404 => 'Data presensi tidak ditemukan.',
+      422 => error.displayMessage,
+      _ => error.displayMessage,
+    };
   }
 }
 

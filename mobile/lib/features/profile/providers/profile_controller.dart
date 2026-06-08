@@ -78,6 +78,25 @@ class ProfileController extends Notifier<ProfileState?> {
     return _stateFromUser(user);
   }
 
+  Future<ProfileActionResult> refreshProfile() async {
+    try {
+      final user = await ref.read(authRepositoryProvider).me();
+      ref.read(authControllerProvider.notifier).replaceCurrentUser(user);
+      state = _stateFromUser(user);
+      return const ProfileActionResult.success();
+    } on ApiException catch (error) {
+      final message = await _handleProtectedApiError(
+        error,
+        badRequestMessage: 'Profil gagal dimuat ulang.',
+      );
+      return ProfileActionResult.failure(message);
+    } catch (_) {
+      return const ProfileActionResult.failure(
+        'Profil gagal dimuat ulang. Silakan coba lagi.',
+      );
+    }
+  }
+
   Future<ProfileActionResult> saveProfile({
     required String name,
     required String jabatan,
@@ -179,8 +198,7 @@ class ProfileController extends Notifier<ProfileState?> {
     ApiException error, {
     required String badRequestMessage,
   }) async {
-    if (error.statusCode == 401) {
-      await ref.read(authControllerProvider.notifier).logout();
+    if (await expireSessionOnUnauthorized(ref, error)) {
       return 'Sesi berakhir. Silakan login kembali.';
     }
 

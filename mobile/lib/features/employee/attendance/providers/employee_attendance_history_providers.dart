@@ -1,56 +1,50 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_exception.dart';
 import '../../../../data/models/attendance_model.dart';
-import '../../../../data/models/office_model.dart';
 import '../../../../data/repositories/repository_providers.dart';
 import '../../../auth/providers/auth_provider.dart';
 
-final employeeAttendanceHistoryProvider = Provider<List<AttendanceModel>>((
-  ref,
-) {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) {
-    return const [];
-  }
+final employeeAttendanceHistoryProvider = FutureProvider<List<AttendanceModel>>(
+  (ref) async {
+    final user = ref.watch(currentUserProvider);
+    if (user == null) {
+      return const [];
+    }
 
-  final history = [
-    ...ref.watch(attendanceRepositoryProvider).getHistoryByUser(user.id),
-  ];
+    final selectedMonth = ref.watch(employeeAttendanceSelectedMonthProvider);
+    final result = await _readProtected(
+      ref,
+      () => ref
+          .watch(attendanceRepositoryProvider)
+          .getHistoryFromApi(userId: user.id, month: selectedMonth),
+    );
+    final history = [...result.records];
 
-  history.sort(
-    (first, second) => second.attendanceDate.compareTo(first.attendanceDate),
-  );
+    history.sort(
+      (first, second) => second.attendanceDate.compareTo(first.attendanceDate),
+    );
 
-  return history;
-});
+    return history;
+  },
+);
 
 final employeeAttendanceHistoryMonthsProvider = Provider<List<DateTime>>((ref) {
-  final history = ref.watch(employeeAttendanceHistoryProvider);
-  final monthKeys = <String>{};
-  final months = <DateTime>[];
-
-  for (final attendance in history) {
-    final month = DateTime(
-      attendance.attendanceDate.year,
-      attendance.attendanceDate.month,
-    );
-    final key = '${month.year}-${month.month}';
-
-    if (monthKeys.add(key)) {
-      months.add(month);
-    }
-  }
-
-  months.sort((first, second) => second.compareTo(first));
-  return months;
+  final now = DateTime.now();
+  return List<DateTime>.generate(12, (index) {
+    return DateTime(now.year, now.month - index);
+  }, growable: false);
 });
 
 class EmployeeAttendanceSelectedMonthController extends Notifier<DateTime?> {
   @override
-  DateTime? build() => null;
+  DateTime? build() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month);
+  }
 
   void setMonth(DateTime? month) {
-    state = month;
+    state = month == null ? null : DateTime(month.year, month.month);
   }
 }
 
@@ -59,69 +53,26 @@ final employeeAttendanceSelectedMonthProvider =
       EmployeeAttendanceSelectedMonthController.new,
     );
 
-final employeeFilteredAttendanceHistoryProvider =
-    Provider<List<AttendanceModel>>((ref) {
-      final history = ref.watch(employeeAttendanceHistoryProvider);
-      final selectedMonth = ref.watch(employeeAttendanceSelectedMonthProvider);
-      final availableMonths = ref.watch(
-        employeeAttendanceHistoryMonthsProvider,
-      );
-      final activeMonth = _resolveActiveMonth(selectedMonth, availableMonths);
-
-      if (activeMonth == null) {
-        return const [];
-      }
-
-      return history.where((attendance) {
-        final date = attendance.attendanceDate;
-        return date.year == activeMonth.year && date.month == activeMonth.month;
-      }).toList();
-    });
-
 final employeeAttendanceDetailProvider =
-    Provider.family<AttendanceModel?, String>((ref, attendanceId) {
+    FutureProvider.family<AttendanceModel?, String>((ref, attendanceId) async {
       final user = ref.watch(currentUserProvider);
       if (user == null) {
         return null;
       }
 
-      final attendance = ref
-          .watch(attendanceRepositoryProvider)
-          .getAttendanceById(attendanceId);
-
-      if (attendance == null || attendance.userId != user.id) {
-        return null;
-      }
-
-      return attendance;
+      return _readProtected(
+        ref,
+        () => ref
+            .watch(attendanceRepositoryProvider)
+            .getAttendanceDetailFromApi(id: attendanceId, userId: user.id),
+      );
     });
 
-final attendanceOfficeProvider = Provider.family<OfficeModel?, String>((
-  ref,
-  officeId,
-) {
-  return ref.watch(officeRepositoryProvider).getOfficeById(officeId);
-});
-
-DateTime? _firstOrNull(List<DateTime> dates) {
-  return dates.isEmpty ? null : dates.first;
-}
-
-DateTime? _resolveActiveMonth(
-  DateTime? selectedMonth,
-  List<DateTime> availableMonths,
-) {
-  if (selectedMonth == null) {
-    return _firstOrNull(availableMonths);
+Future<T> _readProtected<T>(Ref ref, Future<T> Function() request) async {
+  try {
+    return await request();
+  } on ApiException catch (error) {
+    await expireSessionOnUnauthorized(ref, error);
+    rethrow;
   }
-
-  for (final month in availableMonths) {
-    final sameMonth =
-        month.year == selectedMonth.year && month.month == selectedMonth.month;
-    if (sameMonth) {
-      return selectedMonth;
-    }
-  }
-
-  return _firstOrNull(availableMonths);
 }
