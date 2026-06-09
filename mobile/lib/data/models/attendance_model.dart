@@ -16,6 +16,7 @@ class AttendanceModel extends Equatable {
     this.clockInLng,
     this.isOutside = false,
     this.outsideReason,
+    this.rejectNote,
     this.clockInPhotoId,
     this.officeName,
     this.officeLatitude,
@@ -52,6 +53,7 @@ class AttendanceModel extends Equatable {
       clockInLng: _parseDouble(json['clockInLng']),
       isOutside: _parseBool(json['isOutside']),
       outsideReason: json['outsideReason']?.toString(),
+      rejectNote: json['rejectNote']?.toString(),
       clockInPhotoId: json['clockInPhotoId']?.toString(),
       officeName: json['officeName']?.toString(),
       officeLatitude: _parseDouble(json['officeLatitude']),
@@ -74,6 +76,7 @@ class AttendanceModel extends Equatable {
   final double? clockInLng;
   final bool isOutside;
   final String? outsideReason;
+  final String? rejectNote;
   final String? clockInPhotoId;
   final String? officeName;
   final double? officeLatitude;
@@ -96,6 +99,7 @@ class AttendanceModel extends Equatable {
     clockInLng,
     isOutside,
     outsideReason,
+    rejectNote,
     clockInPhotoId,
     officeName,
     officeLatitude,

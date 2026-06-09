@@ -229,6 +229,7 @@ class AttendanceRepository {
   Future<AttendanceModel> validateAttendance({
     required String attendanceId,
     required AttendanceStatus targetStatus,
+    String? rejectNote,
   }) async {
     final existing = getAttendanceById(attendanceId);
     if (existing == null) {
@@ -254,6 +255,11 @@ class AttendanceRepository {
       clockInLng: existing.clockInLng,
       isOutside: existing.isOutside,
       outsideReason: existing.outsideReason,
+      rejectNote: targetStatus == AttendanceStatus.rejected
+          ? rejectNote?.trim().isEmpty == true
+                ? null
+                : rejectNote?.trim()
+          : null,
       clockInPhotoId: existing.clockInPhotoId,
     );
   }

@@ -19,6 +19,7 @@ import '../../../data/models/user_model.dart';
 import '../../../shared/utils/app_snack_bar.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/attendance_info_row.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -90,7 +91,7 @@ class AdminAttendanceDetailScreen extends ConsumerWidget {
                         attendance.status,
                       )) ...[
                         const SizedBox(height: AppSpacing.lg),
-                        _AdminValidationInfoCard(status: attendance.status),
+                        _AdminValidationInfoCard(attendance: attendance),
                       ],
                       if (attendance.status == AttendanceStatus.pending) ...[
                         const SizedBox(height: AppSpacing.lg),
@@ -468,13 +469,14 @@ class _SelfiePlaceholderCard extends StatelessWidget {
 }
 
 class _AdminValidationInfoCard extends StatelessWidget {
-  const _AdminValidationInfoCard({required this.status});
+  const _AdminValidationInfoCard({required this.attendance});
 
-  final AttendanceStatus status;
+  final AttendanceModel attendance;
 
   @override
   Widget build(BuildContext context) {
-    final isRejected = status == AttendanceStatus.rejected;
+    final isRejected = attendance.status == AttendanceStatus.rejected;
+    final rejectNote = attendance.rejectNote?.trim();
 
     return AppCard(
       backgroundColor: isRejected
@@ -484,7 +486,9 @@ class _AdminValidationInfoCard extends StatelessWidget {
         icon: isRejected ? Icons.cancel_outlined : Icons.hourglass_top_rounded,
         label: 'Validasi Admin',
         value: isRejected
-            ? 'Presensi ditolak oleh admin.'
+            ? rejectNote?.isNotEmpty == true
+                  ? 'Presensi ditolak: $rejectNote'
+                  : 'Presensi ditolak oleh admin.'
             : 'Presensi sedang menunggu validasi admin.',
         valueColor: isRejected ? AppColors.dangerDark : AppColors.warningDark,
       ),
@@ -568,22 +572,66 @@ class _ValidationActionCard extends ConsumerWidget {
   }
 
   Future<void> _confirmReject(BuildContext context, WidgetRef ref) async {
-    final confirmed = await _showConfirmationDialog(
+    final noteController = TextEditingController();
+    final decision = await showDialog<_RejectDecision>(
       context: context,
-      title: 'Tolak Presensi?',
-      message: 'Status presensi akan diubah menjadi Ditolak.',
-      confirmLabel: 'Tolak',
-      isDanger: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Tolak Presensi?'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Status presensi akan diubah menjadi Ditolak.'),
+                const SizedBox(height: AppSpacing.md),
+                AppFormField(
+                  label: 'Catatan Penolakan',
+                  hint: 'Tambahkan alasan jika diperlukan',
+                  controller: noteController,
+                  prefixIcon: Icons.edit_note_rounded,
+                  minLines: 3,
+                  maxLines: 4,
+                  maxLength: 255,
+                  helperText: 'Opsional, maksimal 255 karakter.',
+                  textInputAction: TextInputAction.newline,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(_RejectDecision(note: noteController.text.trim()));
+              },
+              child: const Text(
+                'Tolak',
+                style: TextStyle(
+                  color: AppColors.dangerDark,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
+    noteController.dispose();
 
-    if (confirmed != true) {
+    if (decision == null) {
       return;
     }
 
     try {
       await ref
           .read(adminAttendanceActionProvider)
-          .rejectAttendance(attendanceId);
+          .rejectAttendance(attendanceId, note: decision.note);
       if (context.mounted) {
         AppSnackBar.success(context, 'Presensi berhasil ditolak.');
       }
@@ -627,6 +675,12 @@ class _ValidationActionCard extends ConsumerWidget {
       },
     );
   }
+}
+
+class _RejectDecision {
+  const _RejectDecision({required this.note});
+
+  final String note;
 }
 
 bool _shouldShowOutsideReason(AttendanceModel attendance) {

@@ -286,10 +286,14 @@ class AdminAttendanceActionService {
     );
   }
 
-  Future<AttendanceModel> rejectAttendance(String attendanceId) {
+  Future<AttendanceModel> rejectAttendance(
+    String attendanceId, {
+    String? note,
+  }) {
     return _attendanceStore.validateAttendance(
       attendanceId: attendanceId,
       targetStatus: AttendanceStatus.rejected,
+      rejectNote: note,
     );
   }
 }

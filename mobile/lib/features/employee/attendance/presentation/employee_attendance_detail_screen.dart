@@ -108,7 +108,7 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
                             attendance.status,
                           )) ...[
                             const SizedBox(height: AppSpacing.lg),
-                            _AdminValidationInfoCard(status: attendance.status),
+                            _AdminValidationInfoCard(attendance: attendance),
                           ],
                         ],
                       ),
@@ -410,13 +410,14 @@ class _SelfieEmptyState extends StatelessWidget {
 }
 
 class _AdminValidationInfoCard extends StatelessWidget {
-  const _AdminValidationInfoCard({required this.status});
+  const _AdminValidationInfoCard({required this.attendance});
 
-  final AttendanceStatus status;
+  final AttendanceModel attendance;
 
   @override
   Widget build(BuildContext context) {
-    final isRejected = status == AttendanceStatus.rejected;
+    final isRejected = attendance.status == AttendanceStatus.rejected;
+    final rejectNote = attendance.rejectNote?.trim();
 
     return AppCard(
       backgroundColor: isRejected
@@ -426,7 +427,9 @@ class _AdminValidationInfoCard extends StatelessWidget {
         icon: isRejected ? Icons.cancel_outlined : Icons.hourglass_top_rounded,
         label: 'Validasi Admin',
         value: isRejected
-            ? 'Presensi ditolak oleh admin. Catatan penolakan belum tersedia.'
+            ? rejectNote?.isNotEmpty == true
+                  ? 'Presensi ditolak: $rejectNote'
+                  : 'Presensi ditolak oleh admin.'
             : 'Presensi sedang menunggu validasi admin.',
         valueColor: isRejected ? AppColors.dangerDark : AppColors.warningDark,
       ),

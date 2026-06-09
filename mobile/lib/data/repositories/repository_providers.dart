@@ -115,11 +115,13 @@ class AttendanceStoreController extends Notifier<List<AttendanceModel>> {
   Future<AttendanceModel> validateAttendance({
     required String attendanceId,
     required AttendanceStatus targetStatus,
+    String? rejectNote,
   }) async {
     final repository = AttendanceRepository(attendances: state);
     final submitted = await repository.validateAttendance(
       attendanceId: attendanceId,
       targetStatus: targetStatus,
+      rejectNote: rejectNote,
     );
 
     state = [
