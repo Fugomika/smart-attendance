@@ -36,9 +36,9 @@ trait ApiResponse
         return Storage::disk('public')->url($file->objectKey);
     }
 
-    protected function formatUser(User $user): array
+    protected function formatUser(User $user, bool $includeCreatedAt = false): array
     {
-        return [
+        $data = [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -47,6 +47,12 @@ trait ApiResponse
             'status' => $user->status,
             'photoUrl' => $user->photo ? $this->fileUrl($user->photo) : null,
         ];
+
+        if ($includeCreatedAt) {
+            $data['createdAt'] = $this->wib($user->created_at);
+        }
+
+        return $data;
     }
 
     protected function formatFile(File $file): array
@@ -99,8 +105,32 @@ trait ApiResponse
             'officeLatitude' => $att->office?->latitude !== null ? (float) $att->office->latitude : null,
             'officeLongitude' => $att->office?->longitude !== null ? (float) $att->office->longitude : null,
             'officeRadiusMeter' => $att->office?->radiusMeter !== null ? (int) $att->office->radiusMeter : null,
+            'rejectNote' => $att->latestRejectedLog?->note,
             'createdAt' => $this->wib($att->created_at),
             'updatedAt' => $this->wib($att->updated_at),
+        ]);
+    }
+
+    protected function formatAdminAttendanceSummary(Attendance $att): array
+    {
+        return [
+            'id' => $att->id,
+            'userId' => $att->getAttribute('UserId'),
+            'attendanceDate' => $att->attendanceDate?->format('Y-m-d'),
+            'status' => $att->status,
+            'clockInTime' => $this->wib($att->clockInTime),
+            'clockOutTime' => $this->wib($att->clockOutTime),
+            'isOutside' => (bool) $att->isOutside,
+            'officeId' => $att->getAttribute('OfficeId'),
+            'officeName' => $att->office?->officeName,
+        ];
+    }
+
+    protected function formatAdminAttendanceDetail(Attendance $att): array
+    {
+        return array_merge($this->formatAttendanceDetail($att), [
+            'userId' => $att->getAttribute('UserId'),
+            'user' => $att->user ? $this->formatUser($att->user) : null,
         ]);
     }
 

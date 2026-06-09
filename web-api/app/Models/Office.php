@@ -13,7 +13,12 @@ class Office extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
+
+    protected $casts = [
+        'isActive' => 'boolean',
+    ];
 
     public function attendances(): HasMany
     {

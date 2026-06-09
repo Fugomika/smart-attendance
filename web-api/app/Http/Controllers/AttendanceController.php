@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Traits\ApiResponse;
 use App\Models\Attendance;
-use App\Models\AttendanceLog;
 use App\Models\File;
 use App\Models\Office;
+use App\Services\AttendanceTransitionService;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -51,14 +52,14 @@ class AttendanceController extends Controller
         $pageSize = (int) $request->get('pageSize', 10);
         $paginator = $query->paginate($pageSize, ['*'], 'page', $request->get('page', 1));
 
-        return $this->paginate('Data retrieved successfully', $paginator, fn($att) => $this->formatAttendanceSummary($att));
+        return $this->paginate('Data retrieved successfully', $paginator, fn ($att) => $this->formatAttendanceSummary($att));
     }
 
     public function show(Request $request, string $id): JsonResponse
     {
-        $att = Attendance::with(['office', 'photo'])->find($id);
+        $att = Attendance::with(['office', 'photo', 'latestRejectedLog'])->find($id);
 
-        if (!$att) {
+        if (! $att) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -69,7 +70,7 @@ class AttendanceController extends Controller
         return $this->success('Data retrieved successfully', $this->formatAttendanceDetail($att));
     }
 
-    public function clockIn(Request $request): JsonResponse
+    public function clockIn(Request $request, AttendanceTransitionService $transitionService): JsonResponse
     {
         $request->validate([
             'officeId' => 'required|uuid',
@@ -88,7 +89,7 @@ class AttendanceController extends Controller
         }
 
         $office = Office::where('id', $request->officeId)->where('isActive', true)->first();
-        if (!$office) {
+        if (! $office) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -96,7 +97,7 @@ class AttendanceController extends Controller
             ->where('UserId', $user->id)
             ->where('context', 'attendance_selfie')
             ->first();
-        if (!$photo) {
+        if (! $photo) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -109,33 +110,29 @@ class AttendanceController extends Controller
 
         $isOutside = $distance > $office->radiusMeter;
 
-        if ($isOutside && !filled($request->outsideReason)) {
+        if ($isOutside && ! filled($request->outsideReason)) {
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => [['path' => 'outsideReason', 'message' => 'Outside reason is required when location is outside office radius']],
             ], 422);
         }
 
-        $att = Attendance::create([
-            'UserId' => $user->id,
-            'OfficeId' => $office->id,
-            'attendanceDate' => $today,
-            'clockInTime' => now(),
-            'clockInLat' => $request->clockInLat,
-            'clockInLng' => $request->clockInLng,
-            'isOutside' => $isOutside,
-            'outsideReason' => $isOutside ? $request->outsideReason : null,
-            'clockInPhotoId' => $photo->id,
-            'status' => 'CHECKED_IN',
-        ]);
-
-        AttendanceLog::create([
-            'AttendanceId' => $att->id,
-            'statusBefore' => null,
-            'statusAfter' => 'CHECKED_IN',
-        ]);
-
-        $photo->update(['status' => 'CONFIRMED']);
+        $att = $transitionService->create(
+            fn (): Attendance => Attendance::create([
+                'UserId' => $user->id,
+                'OfficeId' => $office->id,
+                'attendanceDate' => $today,
+                'clockInTime' => now(),
+                'clockInLat' => $request->clockInLat,
+                'clockInLng' => $request->clockInLng,
+                'isOutside' => $isOutside,
+                'outsideReason' => $isOutside ? $request->outsideReason : null,
+                'clockInPhotoId' => $photo->id,
+                'status' => 'CHECKED_IN',
+            ]),
+            $user,
+            fn () => $photo->update(['status' => 'CONFIRMED']),
+        );
 
         $att->setRelation('office', $office);
         $att->setRelation('photo', $photo);
@@ -143,7 +140,7 @@ class AttendanceController extends Controller
         return $this->success('Clock in successful', $this->formatAttendanceToday($att), 201);
     }
 
-    public function clockOut(Request $request): JsonResponse
+    public function clockOut(Request $request, AttendanceTransitionService $transitionService): JsonResponse
     {
         $request->validate([
             'attendanceId' => 'required|uuid',
@@ -151,7 +148,7 @@ class AttendanceController extends Controller
 
         $att = Attendance::with('office')->find($request->attendanceId);
 
-        if (!$att) {
+        if (! $att) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -170,16 +167,19 @@ class AttendanceController extends Controller
 
         $newStatus = $att->isOutside ? 'PENDING' : 'VALID';
 
-        $att->update([
-            'clockOutTime' => now(),
-            'status' => $newStatus,
-        ]);
+        try {
+            $att = $transitionService->transition(
+                $att,
+                $newStatus,
+                $request->user(),
+                ['CHECKED_IN'],
+                ['clockOutTime' => now()],
+            );
+        } catch (DomainException) {
+            return response()->json(['message' => 'Attendance status is not CHECKED_IN'], 400);
+        }
 
-        AttendanceLog::create([
-            'AttendanceId' => $att->id,
-            'statusBefore' => 'CHECKED_IN',
-            'statusAfter' => $newStatus,
-        ]);
+        $att->setRelation('office', $att->office()->first());
 
         return $this->success('Clock out successful', [
             'id' => $att->id,
@@ -199,6 +199,7 @@ class AttendanceController extends Controller
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
         $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+
         return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 }

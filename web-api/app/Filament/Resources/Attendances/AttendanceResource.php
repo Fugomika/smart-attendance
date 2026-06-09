@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Attendances;
 
-use App\Filament\Resources\Attendances\Pages\CreateAttendance;
 use App\Filament\Resources\Attendances\Pages\EditAttendance;
 use App\Filament\Resources\Attendances\Pages\ListAttendances;
 use App\Filament\Resources\Attendances\RelationManagers\LogsRelationManager;
@@ -14,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class AttendanceResource extends Resource
 {
@@ -26,7 +26,6 @@ class AttendanceResource extends Resource
     protected static ?string $modelLabel = 'Absensi';
 
     protected static ?string $pluralModelLabel = 'Absensi';
-
 
     public static function form(Schema $schema): Schema
     {
@@ -49,8 +48,22 @@ class AttendanceResource extends Resource
     {
         return [
             'index' => ListAttendances::route('/'),
-            'create' => CreateAttendance::route('/create'),
             'edit' => EditAttendance::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 }

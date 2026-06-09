@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['UserId', 'OfficeId', 'attendanceDate', 'clockInTime', 'clockOutTime', 'clockInLat', 'clockInLng', 'isOutside', 'outsideReason', 'clockInPhotoId', 'status'])]
 class Attendance extends Model
@@ -14,6 +15,7 @@ class Attendance extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $casts = [
@@ -39,6 +41,13 @@ class Attendance extends Model
 
     public function logs(): HasMany
     {
-        return $this->hasMany(AttendanceLog::class);
+        return $this->hasMany(AttendanceLog::class, 'AttendanceId');
+    }
+
+    public function latestRejectedLog(): HasOne
+    {
+        return $this->hasOne(AttendanceLog::class, 'AttendanceId')
+            ->where('statusAfter', 'REJECTED')
+            ->latestOfMany();
     }
 }

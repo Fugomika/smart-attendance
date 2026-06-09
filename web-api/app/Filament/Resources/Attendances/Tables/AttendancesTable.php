@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Attendances\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -93,8 +92,8 @@ class AttendancesTable
 
                 Filter::make('attendanceDate')
                     ->form([
-                        \Filament\Forms\Components\DatePicker::make('from')->label('Dari Tanggal')->native(false),
-                        \Filament\Forms\Components\DatePicker::make('until')->label('Sampai Tanggal')->native(false),
+                        DatePicker::make('from')->label('Dari Tanggal')->native(false),
+                        DatePicker::make('until')->label('Sampai Tanggal')->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -105,11 +104,7 @@ class AttendancesTable
             ->recordActions([
                 EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ])
+            ->toolbarActions([])
             ->defaultSort('attendanceDate', 'desc');
     }
 }

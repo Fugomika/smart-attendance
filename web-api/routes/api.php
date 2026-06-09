@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\OfficeController as AdminOfficeController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileController;
@@ -29,5 +33,19 @@ Route::prefix('v1')->group(function () {
         Route::post('/attendances/clock-in', [AttendanceController::class, 'clockIn']);
         Route::post('/attendances/clock-out', [AttendanceController::class, 'clockOut']);
         Route::get('/attendances/{id}', [AttendanceController::class, 'show']);
+
+        Route::prefix('admin')->middleware('admin')->group(function () {
+            Route::get('/dashboard/summary', [AdminDashboardController::class, 'summary']);
+
+            Route::get('/users', [AdminUserController::class, 'index']);
+            Route::get('/users/{id}', [AdminUserController::class, 'show']);
+
+            Route::get('/attendances', [AdminAttendanceController::class, 'index']);
+            Route::get('/attendances/report', [AdminAttendanceController::class, 'report']);
+            Route::patch('/attendances/{id}/validation', [AdminAttendanceController::class, 'validateAttendance']);
+            Route::get('/attendances/{id}', [AdminAttendanceController::class, 'show']);
+
+            Route::patch('/offices/{id}', [AdminOfficeController::class, 'update']);
+        });
     });
 });

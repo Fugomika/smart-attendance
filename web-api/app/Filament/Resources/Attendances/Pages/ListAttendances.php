@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Attendances\Pages;
 
 use App\Filament\Resources\Attendances\AttendanceResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListAttendances extends ListRecords
@@ -12,8 +11,6 @@ class ListAttendances extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

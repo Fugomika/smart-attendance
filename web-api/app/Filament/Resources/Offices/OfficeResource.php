@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class OfficeResource extends Resource
 {
@@ -25,7 +26,6 @@ class OfficeResource extends Resource
     protected static ?string $modelLabel = 'Kantor';
 
     protected static ?string $pluralModelLabel = 'Kantor';
-
 
     public static function form(Schema $schema): Schema
     {
@@ -51,5 +51,15 @@ class OfficeResource extends Resource
             'create' => CreateOffice::route('/create'),
             'edit' => EditOffice::route('/{record}/edit'),
         ];
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! $record->isActive;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 }

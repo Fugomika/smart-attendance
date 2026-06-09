@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\ApiResponse;
-use App\Models\File;
 use App\Models\User;
+use App\Services\RegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +22,7 @@ class AuthController extends Controller
 
         $user = User::with('photo')->where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -39,42 +39,25 @@ class AuthController extends Controller
         ]);
     }
 
-    public function register(Request $request): JsonResponse
+    public function register(Request $request, RegistrationService $registrationService): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email',
             'password' => 'required|string|min:6',
             'jabatan' => 'nullable|string|max:100',
-            'photoId' => 'nullable|uuid',
+            'avatar' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'photoId' => 'prohibited',
         ]);
 
         if (User::where('email', $request->email)->exists()) {
             return response()->json(['message' => 'Email already registered'], 409);
         }
 
-        $photoFile = null;
-        if ($request->photoId) {
-            $photoFile = File::find($request->photoId);
-            if (!$photoFile) {
-                return response()->json(['message' => 'Not found'], 404);
-            }
-        }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'jabatan' => $request->jabatan,
-            'role' => 'EMPLOYEE',
-            'status' => 'ACTIVE',
-            'PhotoId' => $photoFile?->id,
-        ]);
-
-        if ($photoFile) {
-            $photoFile->update(['status' => 'CONFIRMED']);
-            $user->setRelation('photo', $photoFile);
-        }
+        $user = $registrationService->register(
+            $request->only(['name', 'email', 'password', 'jabatan']),
+            $request->file('avatar'),
+        );
 
         return $this->success('Registration successful', $this->formatUser($user), 201);
     }
@@ -83,7 +66,11 @@ class AuthController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        return $this->success('Jika email terdaftar, instruksi reset password akan dikirim', null);
+        if (! User::where('email', $request->email)->exists()) {
+            return response()->json(['message' => 'Email tidak terdaftar'], 404);
+        }
+
+        return $this->success('Email terdaftar', null);
     }
 
     public function me(Request $request): JsonResponse

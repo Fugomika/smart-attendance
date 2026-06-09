@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAdmin;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -17,10 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'admin' => EnsureAdmin::class,
+        ]);
+
         $middleware->redirectGuestsTo(function (Request $request) {
             if (str_starts_with($request->path(), 'api/')) {
                 return null;
             }
+
             return '/admin/login';
         });
     })
@@ -34,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => 'Validation failed',
                     'errors' => collect($e->errors())
-                        ->flatMap(fn($msgs, $field) => collect($msgs)->map(fn($msg) => ['path' => $field, 'message' => $msg]))
+                        ->flatMap(fn ($msgs, $field) => collect($msgs)->map(fn ($msg) => ['path' => $field, 'message' => $msg]))
                         ->values(),
                 ], 422);
             }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Offices\Schemas;
 
+use App\Models\Office;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -41,7 +42,8 @@ class OfficeForm
                 Toggle::make('isActive')
                     ->label('Aktif')
                     ->required()
-                    ->default(true),
+                    ->default(true)
+                    ->disabled(fn (?Office $record): bool => (bool) $record?->isActive),
             ]);
     }
 }

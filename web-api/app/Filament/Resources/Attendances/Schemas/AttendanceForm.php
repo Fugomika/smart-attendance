@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Attendances\Schemas;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -81,7 +80,8 @@ class AttendanceForm
                                 'LEAVE' => 'Cuti',
                                 'HOLIDAY' => 'Hari Libur',
                             ])
-                            ->required(),
+                            ->required()
+                            ->disabled(),
 
                         Textarea::make('outsideReason')
                             ->label('Alasan Di Luar Area')
