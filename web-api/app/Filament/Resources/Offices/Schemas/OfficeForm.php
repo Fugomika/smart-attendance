@@ -16,7 +16,8 @@ class OfficeForm
                 TextInput::make('officeName')
                     ->label('Nama Kantor')
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->unique(ignoreRecord: true),
 
                 TextInput::make('latitude')
                     ->label('Latitude')

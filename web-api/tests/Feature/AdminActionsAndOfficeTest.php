@@ -9,6 +9,7 @@ use App\Models\Office;
 use App\Models\User;
 use App\Services\ActiveOfficeService;
 use DomainException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
@@ -162,6 +163,37 @@ class AdminActionsAndOfficeTest extends TestCase
         ])
             ->assertUnprocessable()
             ->assertJsonPath('message', 'Validation failed');
+    }
+
+    public function test_admin_office_update_rejects_duplicate_name_but_allows_current_name(): void
+    {
+        $active = $this->activeOfficeService->create($this->officeData('Active Office'));
+        $this->activeOfficeService->create([
+            ...$this->officeData('Other Office'),
+            'isActive' => false,
+        ]);
+        Sanctum::actingAs($this->admin);
+
+        $this->patchJson("/api/v1/admin/offices/{$active->id}", $this->officeData('Other Office'))
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Validation failed')
+            ->assertJsonPath('errors.0.path', 'officeName');
+
+        $this->patchJson("/api/v1/admin/offices/{$active->id}", $this->officeData('Active Office'))
+            ->assertOk()
+            ->assertJsonPath('data.officeName', 'Active Office');
+    }
+
+    public function test_database_rejects_duplicate_office_name_from_shared_service(): void
+    {
+        $this->activeOfficeService->create($this->officeData('Unique Office'));
+
+        $this->expectException(UniqueConstraintViolationException::class);
+
+        $this->activeOfficeService->create([
+            ...$this->officeData('Unique Office'),
+            'isActive' => false,
+        ]);
     }
 
     public function test_active_office_service_keeps_exactly_one_active_office(): void

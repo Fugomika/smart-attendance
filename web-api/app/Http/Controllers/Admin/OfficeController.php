@@ -8,6 +8,7 @@ use App\Models\Office;
 use App\Services\ActiveOfficeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class OfficeController extends Controller
 {
@@ -16,7 +17,12 @@ class OfficeController extends Controller
     public function update(Request $request, string $id, ActiveOfficeService $activeOfficeService): JsonResponse
     {
         $request->validate([
-            'officeName' => 'required|string|max:100',
+            'officeName' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('offices', 'officeName')->ignore($id),
+            ],
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'radiusMeter' => 'required|integer|min:1',

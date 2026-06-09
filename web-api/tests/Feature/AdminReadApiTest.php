@@ -260,7 +260,7 @@ class AdminReadApiTest extends TestCase
     private function createOffice(): Office
     {
         return Office::create([
-            'officeName' => 'Kantor Pusat',
+            'officeName' => 'Kantor '.Str::uuid(),
             'latitude' => -7.43175,
             'longitude' => 109.381309,
             'radiusMeter' => 500,
