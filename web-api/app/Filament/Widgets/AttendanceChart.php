@@ -12,6 +12,8 @@ class AttendanceChart extends ChartWidget
 
     protected static ?int $sort = 3;
 
+    protected int|string|array $columnSpan = 'full';
+
     protected function getData(): array
     {
         $days = collect(range(29, 0))->map(fn ($i) => Carbon::today()->subDays($i));
