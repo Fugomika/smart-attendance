@@ -627,7 +627,7 @@ class _ValidationActionCard extends ConsumerWidget {
   }
 
   Future<void> _confirmReject(BuildContext context, WidgetRef ref) async {
-    final noteController = TextEditingController();
+    var rejectNote = '';
     final decision = await showDialog<_RejectDecision>(
       context: context,
       builder: (dialogContext) {
@@ -643,7 +643,7 @@ class _ValidationActionCard extends ConsumerWidget {
                 AppFormField(
                   label: 'Catatan Penolakan',
                   hint: 'Tambahkan alasan jika diperlukan',
-                  controller: noteController,
+                  onChanged: (value) => rejectNote = value,
                   prefixIcon: Icons.edit_note_rounded,
                   minLines: 3,
                   maxLines: 4,
@@ -663,7 +663,7 @@ class _ValidationActionCard extends ConsumerWidget {
               onPressed: () {
                 Navigator.of(
                   dialogContext,
-                ).pop(_RejectDecision(note: noteController.text.trim()));
+                ).pop(_RejectDecision(note: rejectNote.trim()));
               },
               child: const Text(
                 'Tolak',
@@ -677,7 +677,6 @@ class _ValidationActionCard extends ConsumerWidget {
         );
       },
     );
-    noteController.dispose();
 
     if (decision == null) {
       return;
