@@ -327,8 +327,8 @@ class _ReportEmptyState extends StatelessWidget {
     return EmptyState(
       title: hasQuery ? 'Laporan tidak ditemukan' : 'Belum ada data laporan',
       message: hasQuery
-          ? 'Gunakan nama atau email lain.'
-          : 'Data laporan presensi akan muncul di sini.',
+          ? 'Gunakan nama atau email lain'
+          : 'Data laporan presensi akan muncul di sini',
       icon: hasQuery ? Icons.search_off_rounded : Icons.description_outlined,
     );
   }

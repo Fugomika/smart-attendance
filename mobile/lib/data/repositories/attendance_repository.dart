@@ -21,7 +21,7 @@ class AttendanceRepository {
           return AttendanceModel.fromJson(json, currentUserId: userId);
         }
 
-        throw const FormatException('Invalid today attendance response.');
+        throw const FormatException('Invalid today attendance response');
       },
     );
 
@@ -50,7 +50,7 @@ class AttendanceRepository {
           return AttendanceHistoryResult.fromJson(json, userId: userId);
         }
 
-        throw const FormatException('Invalid attendance history response.');
+        throw const FormatException('Invalid attendance history response');
       },
     );
 
@@ -68,7 +68,7 @@ class AttendanceRepository {
           return AttendanceModel.fromJson(json, currentUserId: userId);
         }
 
-        throw const FormatException('Invalid attendance detail response.');
+        throw const FormatException('Invalid attendance detail response');
       },
     );
 
@@ -99,7 +99,7 @@ class AttendanceRepository {
           return AttendanceModel.fromJson(json, currentUserId: userId);
         }
 
-        throw const FormatException('Invalid clock-in response.');
+        throw const FormatException('Invalid clock-in response');
       },
     );
 
@@ -118,7 +118,7 @@ class AttendanceRepository {
           return AttendanceModel.fromJson(json, currentUserId: userId);
         }
 
-        throw const FormatException('Invalid clock-out response.');
+        throw const FormatException('Invalid clock-out response');
       },
     );
 

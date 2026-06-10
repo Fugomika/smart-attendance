@@ -76,7 +76,7 @@ class OfficeSettingController extends Notifier<OfficeSettingState> {
       state = state.copyWith(
         isLoading: false,
         hasLoaded: true,
-        errorMessage: 'Data kantor aktif gagal dimuat. Silakan coba lagi.',
+        errorMessage: 'Data kantor aktif gagal dimuat. Silakan coba lagi',
       );
     }
   }
@@ -118,7 +118,7 @@ class OfficeSettingController extends Notifier<OfficeSettingState> {
     } catch (_) {
       state = state.copyWith(
         isSaving: false,
-        errorMessage: 'Lokasi kantor gagal disimpan. Silakan coba lagi.',
+        errorMessage: 'Lokasi kantor gagal disimpan. Silakan coba lagi',
       );
       rethrow;
     }
@@ -132,9 +132,9 @@ final officeSettingControllerProvider =
 
 String officeSettingErrorMessage(ApiException error) {
   return switch (error.statusCode) {
-    401 => 'Sesi berakhir. Silakan login kembali.',
-    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin.',
-    404 => 'Data kantor aktif tidak ditemukan.',
+    401 => 'Sesi berakhir. Silakan login kembali',
+    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin',
+    404 => 'Data kantor aktif tidak ditemukan',
     422 => error.displayMessage,
     _ => error.displayMessage,
   };

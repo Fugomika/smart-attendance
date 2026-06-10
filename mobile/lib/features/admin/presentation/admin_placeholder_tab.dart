@@ -41,7 +41,7 @@ class AdminPlaceholderTab extends StatelessWidget {
                   Text(title, style: AppTextStyles.h1),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Admin $title placeholder.',
+                    'Admin $title placeholder',
                     style: AppTextStyles.body,
                     textAlign: TextAlign.center,
                   ),

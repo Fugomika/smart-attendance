@@ -58,7 +58,7 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
             error: (error, stackTrace) => EmptyState(
               icon: Icons.cloud_off_rounded,
               title: 'Detail Belum Tersedia',
-              message: 'Detail presensi belum bisa dimuat.',
+              message: 'Detail presensi belum bisa dimuat',
               action: AppButton(
                 label: 'Coba Lagi',
                 icon: Icons.refresh_rounded,
@@ -75,7 +75,7 @@ class EmployeeAttendanceDetailScreen extends ConsumerWidget {
                 ? const EmptyState(
                     icon: Icons.event_busy_rounded,
                     title: 'Data Tidak Ditemukan',
-                    message: 'Detail presensi ini tidak tersedia.',
+                    message: 'Detail presensi ini tidak tersedia',
                   )
                 : RefreshIndicator(
                     onRefresh: () => ref.refresh(
@@ -275,7 +275,7 @@ class _AttendanceDetailCard extends StatelessWidget {
   Future<void> _openMaps(BuildContext context, Uri uri) async {
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened && context.mounted) {
-      AppSnackBar.error(context, 'Google Maps tidak bisa dibuka.');
+      AppSnackBar.error(context, 'Google Maps tidak bisa dibuka');
     }
   }
 }
@@ -366,14 +366,14 @@ class _SelfiePlaceholderCard extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) {
                       return _SelfieEmptyState(
                         message: hasPhoto
-                            ? 'Foto belum bisa dimuat.'
+                            ? 'Foto belum bisa dimuat'
                             : 'Foto belum ada',
                       );
                     },
                   )
                 : _SelfieEmptyState(
                     message: hasPhoto
-                        ? 'Foto belum bisa dimuat.'
+                        ? 'Foto belum bisa dimuat'
                         : 'Foto belum ada',
                   ),
           ),
@@ -429,8 +429,8 @@ class _AdminValidationInfoCard extends StatelessWidget {
         value: isRejected
             ? rejectNote?.isNotEmpty == true
                   ? 'Presensi ditolak: $rejectNote'
-                  : 'Presensi ditolak oleh admin.'
-            : 'Presensi sedang menunggu validasi admin.',
+                  : 'Presensi ditolak oleh admin'
+            : 'Presensi sedang menunggu validasi admin',
         valueColor: isRejected ? AppColors.dangerDark : AppColors.warningDark,
       ),
     );

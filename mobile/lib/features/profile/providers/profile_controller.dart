@@ -87,12 +87,12 @@ class ProfileController extends Notifier<ProfileState?> {
     } on ApiException catch (error) {
       final message = await _handleProtectedApiError(
         error,
-        badRequestMessage: 'Profil gagal dimuat ulang.',
+        badRequestMessage: 'Profil gagal dimuat ulang',
       );
       return ProfileActionResult.failure(message);
     } catch (_) {
       return const ProfileActionResult.failure(
-        'Profil gagal dimuat ulang. Silakan coba lagi.',
+        'Profil gagal dimuat ulang. Silakan coba lagi',
       );
     }
   }
@@ -105,7 +105,7 @@ class ProfileController extends Notifier<ProfileState?> {
   }) async {
     final current = state;
     if (current == null) {
-      return const ProfileActionResult.failure('Data profil tidak tersedia.');
+      return const ProfileActionResult.failure('Data profil tidak tersedia');
     }
 
     try {
@@ -129,16 +129,16 @@ class ProfileController extends Notifier<ProfileState?> {
 
       ref.read(authControllerProvider.notifier).replaceCurrentUser(updated);
       state = _stateFromUser(updated);
-      return const ProfileActionResult.success('Profil berhasil diperbarui.');
+      return const ProfileActionResult.success('Profil berhasil diperbarui');
     } on ApiException catch (error) {
       final message = await _handleProtectedApiError(
         error,
-        badRequestMessage: 'Profil gagal diperbarui.',
+        badRequestMessage: 'Profil gagal diperbarui',
       );
       return ProfileActionResult.failure(message);
     } catch (_) {
       return const ProfileActionResult.failure(
-        'Profil gagal diperbarui. Silakan coba lagi.',
+        'Profil gagal diperbarui. Silakan coba lagi',
       );
     }
   }
@@ -149,7 +149,7 @@ class ProfileController extends Notifier<ProfileState?> {
   }) async {
     final current = state;
     if (current == null) {
-      return const ProfileActionResult.failure('Data profil tidak tersedia.');
+      return const ProfileActionResult.failure('Data profil tidak tersedia');
     }
 
     try {
@@ -160,16 +160,16 @@ class ProfileController extends Notifier<ProfileState?> {
             oldPassword: oldPassword,
             newPassword: newPassword,
           );
-      return const ProfileActionResult.success('Password berhasil diperbarui.');
+      return const ProfileActionResult.success('Password berhasil diperbarui');
     } on ApiException catch (error) {
       final message = await _handleProtectedApiError(
         error,
-        badRequestMessage: 'Password lama tidak sesuai.',
+        badRequestMessage: 'Password lama tidak sesuai',
       );
       return ProfileActionResult.failure(message);
     } catch (_) {
       return const ProfileActionResult.failure(
-        'Password gagal diperbarui. Silakan coba lagi.',
+        'Password gagal diperbarui. Silakan coba lagi',
       );
     }
   }
@@ -199,13 +199,13 @@ class ProfileController extends Notifier<ProfileState?> {
     required String badRequestMessage,
   }) async {
     if (await expireSessionOnUnauthorized(ref, error)) {
-      return 'Sesi berakhir. Silakan login kembali.';
+      return 'Sesi berakhir. Silakan login kembali';
     }
 
     return switch (error.statusCode) {
       400 => badRequestMessage,
-      403 => 'Anda tidak memiliki akses untuk mengubah data ini.',
-      404 => 'Data yang diperlukan tidak ditemukan.',
+      403 => 'Anda tidak memiliki akses untuk mengubah data ini',
+      404 => 'Data yang diperlukan tidak ditemukan',
       422 => error.displayMessage,
       _ => error.displayMessage,
     };

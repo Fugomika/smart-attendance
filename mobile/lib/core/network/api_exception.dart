@@ -4,7 +4,7 @@ class ApiValidationError {
   factory ApiValidationError.fromJson(Map<String, dynamic> json) {
     return ApiValidationError(
       path: json['path']?.toString() ?? '',
-      message: json['message']?.toString() ?? 'Input tidak valid.',
+      message: json['message']?.toString() ?? 'Input tidak valid',
     );
   }
 
@@ -21,12 +21,12 @@ class ApiException implements Exception {
 
   factory ApiException.network() {
     return const ApiException(
-      message: 'Tidak dapat terhubung ke server. Periksa koneksi Anda.',
+      message: 'Tidak dapat terhubung ke server. Periksa koneksi Anda',
     );
   }
 
   factory ApiException.unknown() {
-    return const ApiException(message: 'Terjadi kesalahan. Silakan coba lagi.');
+    return const ApiException(message: 'Terjadi kesalahan. Silakan coba lagi');
   }
 
   final String message;

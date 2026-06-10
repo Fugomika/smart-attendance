@@ -67,7 +67,7 @@ class AdminAttendanceDetailScreen extends ConsumerWidget {
                   : 'Detail Presensi Tidak Tersedia',
               message: error is ApiException
                   ? adminReadErrorMessage(error)
-                  : 'Detail presensi gagal dimuat. Silakan coba lagi.',
+                  : 'Detail presensi gagal dimuat. Silakan coba lagi',
               action: AppButton(
                 label: 'Coba Lagi',
                 icon: Icons.refresh_rounded,
@@ -138,7 +138,7 @@ class _EmployeeCard extends StatelessWidget {
         child: AttendanceInfoRow(
           icon: Icons.person_search_rounded,
           label: 'Karyawan',
-          value: 'Data karyawan tidak tersedia.',
+          value: 'Data karyawan tidak tersedia',
         ),
       );
     }
@@ -385,7 +385,7 @@ class _AttendanceDetailCard extends StatelessWidget {
   Future<void> _openMaps(BuildContext context, Uri uri) async {
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened && context.mounted) {
-      AppSnackBar.error(context, 'Google Maps tidak bisa dibuka.');
+      AppSnackBar.error(context, 'Google Maps tidak bisa dibuka');
     }
   }
 }
@@ -520,8 +520,8 @@ class _AdminValidationInfoCard extends StatelessWidget {
         value: isRejected
             ? rejectNote?.isNotEmpty == true
                   ? 'Presensi ditolak: $rejectNote'
-                  : 'Presensi ditolak oleh admin.'
-            : 'Presensi sedang menunggu validasi admin.',
+                  : 'Presensi ditolak oleh admin'
+            : 'Presensi sedang menunggu validasi admin',
         valueColor: isRejected ? AppColors.dangerDark : AppColors.warningDark,
       ),
     );
@@ -551,7 +551,7 @@ class _ValidationActionCard extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Presensi ini sedang menunggu keputusan admin.',
+            'Presensi ini sedang menunggu keputusan admin',
             style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -589,7 +589,7 @@ class _ValidationActionCard extends ConsumerWidget {
     final confirmed = await _showConfirmationDialog(
       context: context,
       title: 'Setujui Presensi?',
-      message: 'Status presensi akan diubah menjadi Valid.',
+      message: 'Status presensi akan diubah menjadi Valid',
       confirmLabel: 'Setujui',
     );
 
@@ -602,7 +602,7 @@ class _ValidationActionCard extends ConsumerWidget {
           .read(adminAttendanceActionProvider.notifier)
           .approveAttendance(attendanceId);
       if (context.mounted) {
-        AppSnackBar.success(context, 'Presensi berhasil disetujui.');
+        AppSnackBar.success(context, 'Presensi berhasil disetujui');
       }
     } on ApiException catch (error) {
       if (context.mounted) {
@@ -610,7 +610,7 @@ class _ValidationActionCard extends ConsumerWidget {
       }
     } catch (_) {
       if (context.mounted) {
-        AppSnackBar.error(context, 'Presensi gagal disetujui. Coba lagi.');
+        AppSnackBar.error(context, 'Presensi gagal disetujui. Coba lagi');
       }
     }
   }
@@ -627,7 +627,7 @@ class _ValidationActionCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Status presensi akan diubah menjadi Ditolak.'),
+                const Text('Status presensi akan diubah menjadi Ditolak'),
                 const SizedBox(height: AppSpacing.md),
                 AppFormField(
                   label: 'Catatan Penolakan',
@@ -637,7 +637,7 @@ class _ValidationActionCard extends ConsumerWidget {
                   minLines: 3,
                   maxLines: 4,
                   maxLength: 255,
-                  helperText: 'Opsional, maksimal 255 karakter.',
+                  helperText: 'Opsional, maksimal 255 karakter',
                   textInputAction: TextInputAction.newline,
                 ),
               ],
@@ -677,7 +677,7 @@ class _ValidationActionCard extends ConsumerWidget {
           .read(adminAttendanceActionProvider.notifier)
           .rejectAttendance(attendanceId, note: decision.note);
       if (context.mounted) {
-        AppSnackBar.success(context, 'Presensi berhasil ditolak.');
+        AppSnackBar.success(context, 'Presensi berhasil ditolak');
       }
     } on ApiException catch (error) {
       if (context.mounted) {
@@ -685,7 +685,7 @@ class _ValidationActionCard extends ConsumerWidget {
       }
     } catch (_) {
       if (context.mounted) {
-        AppSnackBar.error(context, 'Presensi gagal ditolak. Coba lagi.');
+        AppSnackBar.error(context, 'Presensi gagal ditolak. Coba lagi');
       }
     }
   }

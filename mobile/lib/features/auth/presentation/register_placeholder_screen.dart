@@ -303,14 +303,14 @@ class _RegisterPlaceholderScreenState
     if (!success) {
       final message =
           ref.read(authControllerProvider).errorMessage ??
-          'Pendaftaran gagal. Silakan coba lagi.';
+          'Pendaftaran gagal. Silakan coba lagi';
       AppSnackBar.error(context, message);
       return;
     }
 
     AppSnackBar.success(
       context,
-      'Pendaftaran berhasil. Silakan masuk dengan akun Anda.',
+      'Pendaftaran berhasil. Silakan masuk dengan akun Anda',
     );
     context.go(RouteNames.login);
   }

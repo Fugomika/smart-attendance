@@ -155,17 +155,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
     setState(() {
       _oldPasswordError = oldPassword.isEmpty
-          ? 'Password lama wajib diisi.'
+          ? 'Password lama wajib diisi'
           : null;
       _newPasswordError = newPassword.isEmpty
-          ? 'Password baru wajib diisi.'
+          ? 'Password baru wajib diisi'
           : newPassword.length < 6
-          ? 'Password baru minimal 6 karakter.'
+          ? 'Password baru minimal 6 karakter'
           : null;
       _confirmPasswordError = confirmPassword.isEmpty
-          ? 'Konfirmasi password wajib diisi.'
+          ? 'Konfirmasi password wajib diisi'
           : confirmPassword != newPassword
-          ? 'Konfirmasi password tidak sama.'
+          ? 'Konfirmasi password tidak sama'
           : null;
     });
 
@@ -190,14 +190,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     if (!result.isSuccess) {
       AppSnackBar.error(
         context,
-        result.message ?? 'Password gagal diperbarui.',
+        result.message ?? 'Password gagal diperbarui',
       );
       return;
     }
 
     AppSnackBar.success(
       context,
-      result.message ?? 'Password berhasil diperbarui.',
+      result.message ?? 'Password berhasil diperbarui',
     );
     _goBack();
   }

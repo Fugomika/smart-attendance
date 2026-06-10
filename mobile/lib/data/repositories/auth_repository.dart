@@ -29,13 +29,13 @@ class AuthRepository {
           return AuthSessionModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid login response.');
+        throw const FormatException('Invalid login response');
       },
     );
 
     final session = response.data;
     if (session.accessToken.trim().isEmpty) {
-      throw const FormatException('Login response missing access token.');
+      throw const FormatException('Login response missing access token');
     }
 
     await _tokenStore.saveToken(session.accessToken, persist: remember);
@@ -50,7 +50,7 @@ class AuthRepository {
           return UserModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid current user response.');
+        throw const FormatException('Invalid current user response');
       },
     );
 
@@ -94,7 +94,7 @@ class AuthRepository {
           return UserModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid register response.');
+        throw const FormatException('Invalid register response');
       },
     );
 

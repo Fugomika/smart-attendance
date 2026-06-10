@@ -277,7 +277,7 @@ class _LoginPlaceholderScreenState
     if (!success) {
       final message =
           ref.read(authControllerProvider).errorMessage ??
-          'Email atau password salah.';
+          'Email atau password salah';
       AppSnackBar.error(context, message);
       return;
     }

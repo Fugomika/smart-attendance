@@ -33,7 +33,7 @@ class AttendanceModel extends Equatable {
   }) {
     final attendanceDate = ApiDateTimeParser.dateOnly(json['attendanceDate']);
     if (attendanceDate == null) {
-      throw const FormatException('Invalid attendance date.');
+      throw const FormatException('Invalid attendance date');
     }
 
     return AttendanceModel(

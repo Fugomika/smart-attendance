@@ -158,8 +158,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final position = _positionController.text.trim();
 
     setState(() {
-      _nameError = name.isEmpty ? 'Nama lengkap wajib diisi.' : null;
-      _positionError = position.isEmpty ? 'Jabatan wajib diisi.' : null;
+      _nameError = name.isEmpty ? 'Nama lengkap wajib diisi' : null;
+      _positionError = position.isEmpty ? 'Jabatan wajib diisi' : null;
     });
 
     if (_nameError != null || _positionError != null) {
@@ -184,13 +184,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isSaving = false);
 
     if (!result.isSuccess) {
-      AppSnackBar.error(context, result.message ?? 'Profil gagal diperbarui.');
+      AppSnackBar.error(context, result.message ?? 'Profil gagal diperbarui');
       return;
     }
 
     AppSnackBar.success(
       context,
-      result.message ?? 'Profil berhasil diperbarui.',
+      result.message ?? 'Profil berhasil diperbarui',
     );
     _goToProfile();
   }
@@ -259,7 +259,7 @@ class _MissingProfile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Text(
-          'Data profil tidak tersedia.',
+          'Data profil tidak tersedia',
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),

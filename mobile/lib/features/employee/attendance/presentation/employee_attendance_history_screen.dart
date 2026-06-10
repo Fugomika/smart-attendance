@@ -46,7 +46,7 @@ class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
                   Text('Riwayat Absensi', style: AppTextStyles.h2),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Lihat ringkasan presensi berdasarkan bulan.',
+                    'Lihat ringkasan presensi berdasarkan bulan',
                     style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -69,7 +69,7 @@ class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
                     error: (error, stackTrace) => EmptyState(
                       icon: Icons.cloud_off_rounded,
                       title: 'Riwayat Belum Tersedia',
-                      message: 'Data riwayat presensi belum bisa dimuat.',
+                      message: 'Data riwayat presensi belum bisa dimuat',
                       action: AppButton(
                         label: 'Coba Lagi',
                         icon: Icons.refresh_rounded,
@@ -85,7 +85,7 @@ class EmployeeAttendanceHistoryScreen extends ConsumerWidget {
                             icon: Icons.event_busy_rounded,
                             title: 'Riwayat Kosong',
                             message:
-                                'Tidak ada data presensi pada bulan yang dipilih.',
+                                'Tidak ada data presensi pada bulan yang dipilih',
                           )
                         : Column(
                             children: [

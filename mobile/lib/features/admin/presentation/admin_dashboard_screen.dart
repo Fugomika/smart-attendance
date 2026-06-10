@@ -152,7 +152,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       title: 'Rekap belum tersedia',
                       message: error is ApiException
                           ? adminReadErrorMessage(error)
-                          : 'Data dashboard admin belum bisa ditampilkan untuk tanggal ini.',
+                          : 'Data dashboard admin belum bisa ditampilkan untuk tanggal ini',
                       icon: Icons.grid_view_rounded,
                       action: AppButton(
                         label: 'Coba Lagi',

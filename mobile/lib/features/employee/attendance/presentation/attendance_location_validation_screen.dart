@@ -165,7 +165,7 @@ class _AttendanceLocationValidationScreenState
       if (result == null) {
         AppSnackBar.error(
           context,
-          'Data lokasi belum lengkap. Coba ulangi validasi lokasi.',
+          'Data lokasi belum lengkap. Coba ulangi validasi lokasi',
         );
         return;
       }
@@ -179,7 +179,7 @@ class _AttendanceLocationValidationScreenState
       return;
     }
 
-    AppSnackBar.warning(context, 'Validasi lokasi belum siap.');
+    AppSnackBar.warning(context, 'Validasi lokasi belum siap');
   }
 
   AttendanceLocationResult? _resultFromState(
@@ -239,7 +239,7 @@ class _AttendanceLocationValidationScreenState
 
               AppSnackBar.error(
                 context,
-                'Data lokasi belum lengkap. Coba ulangi validasi lokasi.',
+                'Data lokasi belum lengkap. Coba ulangi validasi lokasi',
               );
               return;
             }
@@ -302,7 +302,7 @@ class _OutsideReasonSheetState extends State<_OutsideReasonSheet> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Jarak Anda dari kantor saat ini sekitar ${widget.distanceText}.',
+                'Jarak Anda dari kantor saat ini sekitar ${widget.distanceText}',
                 style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -353,7 +353,7 @@ class _OutsideReasonSheetState extends State<_OutsideReasonSheet> {
     final reason = _reasonController.text.trim();
     if (reason.isEmpty) {
       setState(() {
-        _errorText = 'Alasan wajib diisi.';
+        _errorText = 'Alasan wajib diisi';
       });
       return;
     }
@@ -694,7 +694,7 @@ class _OfficeInfoGrid extends StatelessWidget {
       final remaining = text.length - i;
       buffer.write(text[i]);
       if (remaining > 1 && remaining % 3 == 1) {
-        buffer.write('.');
+        buffer.write('');
       }
     }
 
@@ -1054,40 +1054,40 @@ class _StatusCardData {
     return switch (state.status) {
       LocationValidationStatus.loading => _StatusCardData(
         title: 'Mencari Lokasi',
-        description: state.message ?? 'Mohon tunggu sebentar.',
+        description: state.message ?? 'Mohon tunggu sebentar',
         icon: Icons.location_searching_rounded,
         color: AppColors.primary,
       ),
       LocationValidationStatus.permissionDenied => _StatusCardData(
         title: 'Izin Lokasi Diperlukan',
         description:
-            'Aktifkan izin lokasi agar aplikasi dapat memeriksa radius presensi.',
+            'Aktifkan izin lokasi agar aplikasi dapat memeriksa radius presensi',
         icon: Icons.location_disabled_rounded,
         color: AppColors.dangerDark,
       ),
       LocationValidationStatus.serviceDisabled => _StatusCardData(
         title: 'Lokasi Belum Aktif',
-        description: 'Aktifkan layanan lokasi di perangkat, lalu coba lagi.',
+        description: 'Aktifkan layanan lokasi di perangkat, lalu coba lagi',
         icon: Icons.gps_off_rounded,
         color: AppColors.warningDark,
       ),
       LocationValidationStatus.locationError => _StatusCardData(
         title: 'Lokasi Belum Terbaca',
         description:
-            'Pastikan GPS aktif dan sinyal lokasi stabil, lalu coba lagi.',
+            'Pastikan GPS aktif dan sinyal lokasi stabil, lalu coba lagi',
         icon: Icons.wrong_location_rounded,
         color: AppColors.warningDark,
       ),
       LocationValidationStatus.insideRadius => _StatusCardData(
         title: 'Lokasi Sesuai',
-        description: 'Anda berada dalam radius presensi.',
+        description: 'Anda berada dalam radius presensi',
         icon: Icons.check_circle_rounded,
         color: AppColors.success,
       ),
       LocationValidationStatus.outsideRadius => const _StatusCardData(
         title: 'Di Luar Radius',
         description:
-            'Anda tetap bisa lanjut dengan alasan presensi dari luar kantor.',
+            'Anda tetap bisa lanjut dengan alasan presensi dari luar kantor',
         icon: Icons.info_rounded,
         color: AppColors.primary,
       ),

@@ -35,13 +35,15 @@ Copy `.env.example` menjadi `.env` di folder `mobile/`, lalu sesuaikan:
 
 ```env
 API_BASE_URL=http://192.168.1.5:8000/api/v1
-SHOW_DEBUG_PREVIEW=true
+SHOW_DEBUG_PREVIEW=false
 ```
 
 - `.env` digunakan otomatis saat aplikasi dimulai sehingga development cukup
   memakai `flutter run`.
 - `.env` tidak boleh berisi password, token, atau secret karena file tersebut
   dibundel sebagai asset aplikasi.
+- `API_BASE_URL` wajib berupa URL HTTP/HTTPS valid. Aplikasi berhenti dengan
+  error konfigurasi jika nilainya kosong atau tidak valid.
 - `SHOW_DEBUG_PREVIEW` hanya berpengaruh pada debug build karena UI preview
   tetap dilindungi `kDebugMode`.
 - Sebelum production build, isi `.env` dengan URL production dan set

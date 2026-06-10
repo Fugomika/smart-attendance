@@ -100,7 +100,7 @@ class _AdminEmployeeDetailScreenState
                   : 'Detail Karyawan Tidak Tersedia',
               message: error is ApiException
                   ? adminReadErrorMessage(error)
-                  : 'Data karyawan gagal dimuat. Silakan coba lagi.',
+                  : 'Data karyawan gagal dimuat. Silakan coba lagi',
               action: AppButton(
                 label: 'Coba Lagi',
                 icon: Icons.refresh_rounded,
@@ -182,7 +182,7 @@ class _AdminEmployeeDetailScreenState
                         icon: Icons.event_busy_rounded,
                         title: 'Riwayat Kosong',
                         message:
-                            'Tidak ada data presensi pada periode yang dipilih.',
+                            'Tidak ada data presensi pada periode yang dipilih',
                       )
                     else ...[
                       ...historyState.records.map((attendance) {

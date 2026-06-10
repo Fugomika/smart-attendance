@@ -38,7 +38,7 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
     if (attendance.status != AttendanceStatus.checkedIn) {
       state = const ClockOutSubmitState(
         status: ClockOutSubmitStatus.error,
-        message: 'Presensi hari ini tidak dalam status absen masuk.',
+        message: 'Presensi hari ini tidak dalam status absen masuk',
       );
       return null;
     }
@@ -50,7 +50,7 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
       if (user == null) {
         state = const ClockOutSubmitState(
           status: ClockOutSubmitStatus.error,
-          message: 'Sesi pengguna tidak tersedia. Silakan login ulang.',
+          message: 'Sesi pengguna tidak tersedia. Silakan login ulang',
         );
         return null;
       }
@@ -66,8 +66,8 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
         status: ClockOutSubmitStatus.success,
         attendance: submitted,
         message: submitted.isOutside
-            ? 'Absen pulang disimpan dan menunggu validasi admin.'
-            : 'Absen pulang berhasil disimpan.',
+            ? 'Absen pulang disimpan dan menunggu validasi admin'
+            : 'Absen pulang berhasil disimpan',
       );
       return submitted;
     } on ApiException catch (error) {
@@ -81,7 +81,7 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
     } catch (_) {
       state = const ClockOutSubmitState(
         status: ClockOutSubmitStatus.error,
-        message: 'Absen pulang gagal disimpan. Coba lagi.',
+        message: 'Absen pulang gagal disimpan. Coba lagi',
       );
       return null;
     }
@@ -90,9 +90,9 @@ class ClockOutController extends Notifier<ClockOutSubmitState> {
   String _clockOutErrorMessage(ApiException error) {
     return switch (error.statusCode) {
       400 => error.displayMessage,
-      401 => 'Sesi berakhir. Silakan login kembali.',
-      403 => 'Presensi ini tidak dapat diakses oleh akun kamu.',
-      404 => 'Data presensi tidak ditemukan.',
+      401 => 'Sesi berakhir. Silakan login kembali',
+      403 => 'Presensi ini tidak dapat diakses oleh akun kamu',
+      404 => 'Data presensi tidak ditemukan',
       422 => error.displayMessage,
       _ => error.displayMessage,
     };

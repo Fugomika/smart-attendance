@@ -42,7 +42,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
         _setState(
           const AttendanceSelfieState(
             status: AttendanceSelfieStatus.cameraUnavailable,
-            message: 'Kamera depan tidak tersedia di perangkat ini.',
+            message: 'Kamera depan tidak tersedia di perangkat ini',
           ),
         );
         return;
@@ -60,7 +60,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
         _setState(
           const AttendanceSelfieState(
             status: AttendanceSelfieStatus.error,
-            message: 'Kamera belum siap. Coba lagi.',
+            message: 'Kamera belum siap. Coba lagi',
           ),
         );
         return;
@@ -69,7 +69,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
       _setState(
         const AttendanceSelfieState(
           status: AttendanceSelfieStatus.ready,
-          message: 'Kamera siap digunakan.',
+          message: 'Kamera siap digunakan',
         ),
       );
     } on CameraException catch (error) {
@@ -80,7 +80,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
       _setState(
         const AttendanceSelfieState(
           status: AttendanceSelfieStatus.error,
-          message: 'Kamera gagal dibuka. Coba lagi.',
+          message: 'Kamera gagal dibuka. Coba lagi',
         ),
       );
     }
@@ -94,7 +94,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
       _setState(
         const AttendanceSelfieState(
           status: AttendanceSelfieStatus.error,
-          message: 'Kamera belum siap. Coba lagi.',
+          message: 'Kamera belum siap. Coba lagi',
         ),
       );
       return;
@@ -118,7 +118,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
           status: AttendanceSelfieStatus.captured,
           selfiePath: photo.path,
           capturedAt: DateTime.now(),
-          message: 'Selfie berhasil diambil.',
+          message: 'Selfie berhasil diambil',
         ),
       );
     } on CameraException catch (error) {
@@ -127,7 +127,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
       _setState(
         const AttendanceSelfieState(
           status: AttendanceSelfieStatus.error,
-          message: 'Gagal mengambil foto. Coba lagi.',
+          message: 'Gagal mengambil foto. Coba lagi',
         ),
       );
     }
@@ -139,7 +139,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
       _setState(
         const AttendanceSelfieState(
           status: AttendanceSelfieStatus.error,
-          message: 'Kamera belum siap. Coba lagi.',
+          message: 'Kamera belum siap. Coba lagi',
         ),
       );
       return;
@@ -148,7 +148,7 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
     _setState(
       const AttendanceSelfieState(
         status: AttendanceSelfieStatus.ready,
-        message: 'Kamera siap digunakan.',
+        message: 'Kamera siap digunakan',
       ),
     );
   }
@@ -168,13 +168,13 @@ class AttendanceSelfieController extends Notifier<AttendanceSelfieState> {
       return const AttendanceSelfieState(
         status: AttendanceSelfieStatus.permissionDenied,
         message:
-            'Izin kamera ditolak. Berikan izin kamera untuk mengambil selfie.',
+            'Izin kamera ditolak. Berikan izin kamera untuk mengambil selfie',
       );
     }
 
     return AttendanceSelfieState(
       status: AttendanceSelfieStatus.error,
-      message: error.description ?? 'Kamera gagal digunakan. Coba lagi.',
+      message: error.description ?? 'Kamera gagal digunakan. Coba lagi',
     );
   }
 

@@ -20,7 +20,7 @@ class LocationService {
     if (!serviceEnabled) {
       throw const LocationFailure(
         LocationFailureType.serviceDisabled,
-        'Layanan lokasi belum aktif.',
+        'Layanan lokasi belum aktif',
       );
     }
 
@@ -33,7 +33,7 @@ class LocationService {
         permission == LocationPermission.deniedForever) {
       throw const LocationFailure(
         LocationFailureType.permissionDenied,
-        'Izin lokasi belum diberikan.',
+        'Izin lokasi belum diberikan',
       );
     }
 
@@ -49,22 +49,22 @@ class LocationService {
     } on TimeoutException {
       throw const LocationFailure(
         LocationFailureType.unknown,
-        'Lokasi belum berhasil ditemukan. Coba lagi beberapa saat.',
+        'Lokasi belum berhasil ditemukan. Coba lagi beberapa saat',
       );
     } on LocationServiceDisabledException {
       throw const LocationFailure(
         LocationFailureType.serviceDisabled,
-        'Layanan lokasi belum aktif.',
+        'Layanan lokasi belum aktif',
       );
     } on PermissionDeniedException {
       throw const LocationFailure(
         LocationFailureType.permissionDenied,
-        'Izin lokasi belum diberikan.',
+        'Izin lokasi belum diberikan',
       );
     } catch (_) {
       throw const LocationFailure(
         LocationFailureType.unknown,
-        'Terjadi kendala saat membaca lokasi.',
+        'Terjadi kendala saat membaca lokasi',
       );
     }
   }

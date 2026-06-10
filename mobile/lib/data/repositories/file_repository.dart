@@ -35,7 +35,7 @@ class FileRepository {
           return FileUploadModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid file upload response.');
+        throw const FormatException('Invalid file upload response');
       },
     );
 

@@ -168,7 +168,7 @@ class ProfileScreen extends ConsumerWidget {
     if (!result.isSuccess && context.mounted) {
       AppSnackBar.error(
         context,
-        result.message ?? 'Profil gagal dimuat ulang.',
+        result.message ?? 'Profil gagal dimuat ulang',
       );
     }
   }
@@ -177,13 +177,13 @@ class ProfileScreen extends ConsumerWidget {
     if (isAdminProfile) {
       ref.read(appModeProvider.notifier).enterEmployeeMode();
       context.go(RouteNames.employeeHome);
-      AppSnackBar.info(context, 'Berhasil masuk ke Mode Karyawan.');
+      AppSnackBar.info(context, 'Berhasil masuk ke Mode Karyawan');
       return;
     }
 
     ref.read(appModeProvider.notifier).enterAdminMode(role: UserRole.admin);
     context.go(RouteNames.adminDashboard);
-    AppSnackBar.info(context, 'Berhasil kembali ke Mode Admin.');
+    AppSnackBar.info(context, 'Berhasil kembali ke Mode Admin');
   }
 
   void _showAboutSheet(BuildContext context) {
@@ -236,7 +236,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Aplikasi presensi internal dengan validasi lokasi dan selfie.',
+                  'Aplikasi presensi internal dengan validasi lokasi dan selfie',
                   style: AppTextStyles.body.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -418,7 +418,7 @@ class _EmptyProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        'Data profil tidak tersedia.',
+        'Data profil tidak tersedia',
         style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
       ),
     );

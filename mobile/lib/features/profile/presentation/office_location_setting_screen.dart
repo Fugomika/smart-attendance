@@ -202,23 +202,23 @@ class _OfficeLocationSettingScreenState
     final radius = _parseNumber(_radiusController.text);
 
     setState(() {
-      _nameError = name.isEmpty ? 'Nama kantor wajib diisi.' : null;
+      _nameError = name.isEmpty ? 'Nama kantor wajib diisi' : null;
       _latitudeError = latitude == null
-          ? 'Latitude wajib berupa angka.'
+          ? 'Latitude wajib berupa angka'
           : latitude < -90 || latitude > 90
-          ? 'Latitude harus berada antara -90 dan 90.'
+          ? 'Latitude harus berada antara -90 dan 90'
           : null;
       _longitudeError = longitude == null
-          ? 'Longitude wajib berupa angka.'
+          ? 'Longitude wajib berupa angka'
           : longitude < -180 || longitude > 180
-          ? 'Longitude harus berada antara -180 dan 180.'
+          ? 'Longitude harus berada antara -180 dan 180'
           : null;
       _radiusError = radius == null
-          ? 'Radius wajib berupa angka.'
+          ? 'Radius wajib berupa angka'
           : radius <= 0
-          ? 'Radius harus lebih dari 0.'
+          ? 'Radius harus lebih dari 0'
           : radius % 1 != 0
-          ? 'Radius wajib berupa bilangan bulat.'
+          ? 'Radius wajib berupa bilangan bulat'
           : null;
     });
 
@@ -239,7 +239,7 @@ class _OfficeLocationSettingScreenState
             radiusMeter: radius!.toInt(),
           );
       if (mounted) {
-        AppSnackBar.success(context, 'Lokasi kantor berhasil disimpan.');
+        AppSnackBar.success(context, 'Lokasi kantor berhasil disimpan');
         _goBack();
       }
     } on ApiException catch (error) {
@@ -248,7 +248,7 @@ class _OfficeLocationSettingScreenState
       }
     } catch (_) {
       if (mounted) {
-        AppSnackBar.error(context, 'Lokasi kantor gagal disimpan. Coba lagi.');
+        AppSnackBar.error(context, 'Lokasi kantor gagal disimpan. Coba lagi');
       }
     }
   }
@@ -307,7 +307,7 @@ class _MissingOffice extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Text(
-          'Data kantor tidak tersedia.',
+          'Data kantor tidak tersedia',
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),

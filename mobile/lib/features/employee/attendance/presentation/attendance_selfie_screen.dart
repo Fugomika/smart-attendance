@@ -105,7 +105,7 @@ class _AttendanceSelfieScreenState
     final selfiePath = selfieState.selfiePath;
     final capturedAt = selfieState.capturedAt;
     if (selfiePath == null || capturedAt == null) {
-      AppSnackBar.warning(context, 'Ambil selfie terlebih dahulu.');
+      AppSnackBar.warning(context, 'Ambil selfie terlebih dahulu');
       return;
     }
 
@@ -125,12 +125,12 @@ class _AttendanceSelfieScreenState
     if (attendance == null) {
       final message =
           ref.read(clockInControllerProvider).message ??
-          'Absen masuk gagal disimpan. Coba lagi.';
+          'Absen masuk gagal disimpan. Coba lagi';
       AppSnackBar.error(context, message);
       return;
     }
 
-    AppSnackBar.success(context, 'Absen masuk berhasil disimpan.');
+    AppSnackBar.success(context, 'Absen masuk berhasil disimpan');
     context.go(RouteNames.employeeHome);
   }
 
@@ -165,7 +165,7 @@ class _MissingLocationResult extends StatelessWidget {
               Text('Data lokasi belum tersedia', style: AppTextStyles.h3),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Silakan ulangi validasi lokasi sebelum mengambil selfie.',
+                'Silakan ulangi validasi lokasi sebelum mengambil selfie',
                 style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.4,
@@ -331,7 +331,7 @@ class _CameraPanelBody extends StatelessWidget {
       return _CameraMessage(
         icon: Icons.camera_alt_rounded,
         title: 'Menyiapkan kamera',
-        description: state.message ?? 'Mohon tunggu sebentar.',
+        description: state.message ?? 'Mohon tunggu sebentar',
         showProgress: true,
       );
     }
@@ -339,7 +339,7 @@ class _CameraPanelBody extends StatelessWidget {
     return _CameraMessage(
       icon: _errorIcon(state.status),
       title: _errorTitle(state.status),
-      description: state.message ?? 'Kamera belum bisa digunakan.',
+      description: state.message ?? 'Kamera belum bisa digunakan',
       actionLabel: 'Coba Lagi',
       onAction: onRetry,
     );

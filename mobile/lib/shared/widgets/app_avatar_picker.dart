@@ -38,7 +38,7 @@ class AppAvatarPicker extends StatelessWidget {
       }
     } catch (_) {
       if (context.mounted) {
-        AppSnackBar.error(context, 'Gagal mengambil foto. Coba lagi.');
+        AppSnackBar.error(context, 'Gagal mengambil foto. Coba lagi');
       }
     }
   }

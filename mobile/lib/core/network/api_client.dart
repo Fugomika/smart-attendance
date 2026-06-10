@@ -123,7 +123,7 @@ class ApiClient {
     if (data is Map<String, dynamic>) {
       final message =
           data['message']?.toString() ??
-          'Terjadi kesalahan. Silakan coba lagi.';
+          'Terjadi kesalahan. Silakan coba lagi';
       final rawErrors = data['errors'];
       final errors = _parseValidationErrors(rawErrors);
 

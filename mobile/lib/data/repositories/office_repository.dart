@@ -15,7 +15,7 @@ class OfficeRepository {
           return OfficeModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid active office response.');
+        throw const FormatException('Invalid active office response');
       },
     );
 
@@ -42,7 +42,7 @@ class OfficeRepository {
           return OfficeModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid active office update response.');
+        throw const FormatException('Invalid active office update response');
       },
     );
 

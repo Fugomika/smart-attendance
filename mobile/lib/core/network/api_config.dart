@@ -1,15 +1,15 @@
 import '../config/app_env.dart';
 
 class ApiConfig {
-  ApiConfig({String? baseUrl})
-    : baseUrl = baseUrl?.trim().isNotEmpty == true
-          ? baseUrl!.trim()
-          : AppEnv.apiBaseUrl.isNotEmpty
-          ? AppEnv.apiBaseUrl
-          : physicalPhoneBaseUrl;
+  ApiConfig({String? baseUrl}) : baseUrl = _resolveBaseUrl(baseUrl);
 
-  static const String physicalPhoneBaseUrl = 'http://192.168.1.5:8000/api/v1';
-  static const String desktopBaseUrl = 'http://127.0.0.1:8000/api/v1';
-  static const String androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api/v1';
   final String baseUrl;
+
+  static String _resolveBaseUrl(String? override) {
+    if (override == null || override.trim().isEmpty) {
+      return AppEnv.apiBaseUrl;
+    }
+
+    return AppEnv.normalizeApiBaseUrl(override, source: 'ApiConfig.baseUrl');
+  }
 }

@@ -39,7 +39,7 @@ class ClockInController extends Notifier<ClockInSubmitState> {
     if (user == null) {
       state = const ClockInSubmitState(
         status: ClockInSubmitStatus.error,
-        message: 'Sesi pengguna tidak tersedia. Silakan login ulang.',
+        message: 'Sesi pengguna tidak tersedia. Silakan login ulang',
       );
       return null;
     }
@@ -48,7 +48,7 @@ class ClockInController extends Notifier<ClockInSubmitState> {
     if (selfiePath.isEmpty) {
       state = const ClockInSubmitState(
         status: ClockInSubmitStatus.error,
-        message: 'Foto selfie belum tersedia.',
+        message: 'Foto selfie belum tersedia',
       );
       return null;
     }
@@ -79,7 +79,7 @@ class ClockInController extends Notifier<ClockInSubmitState> {
       state = ClockInSubmitState(
         status: ClockInSubmitStatus.success,
         attendance: attendance,
-        message: 'Absen masuk berhasil disimpan.',
+        message: 'Absen masuk berhasil disimpan',
       );
       return attendance;
     } on ApiException catch (error) {
@@ -93,7 +93,7 @@ class ClockInController extends Notifier<ClockInSubmitState> {
     } catch (_) {
       state = const ClockInSubmitState(
         status: ClockInSubmitStatus.error,
-        message: 'Absen masuk gagal disimpan. Coba lagi.',
+        message: 'Absen masuk gagal disimpan. Coba lagi',
       );
       return null;
     }
@@ -101,9 +101,9 @@ class ClockInController extends Notifier<ClockInSubmitState> {
 
   String _clockInErrorMessage(ApiException error) {
     return switch (error.statusCode) {
-      401 => 'Sesi berakhir. Silakan login kembali.',
-      404 => 'Data kantor atau foto selfie tidak ditemukan.',
-      409 => 'Kamu sudah absen masuk hari ini.',
+      401 => 'Sesi berakhir. Silakan login kembali',
+      404 => 'Data kantor atau foto selfie tidak ditemukan',
+      409 => 'Kamu sudah absen masuk hari ini',
       422 => error.displayMessage,
       _ => error.displayMessage,
     };

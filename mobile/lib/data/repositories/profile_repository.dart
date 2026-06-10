@@ -32,7 +32,7 @@ class ProfileRepository {
           return UserModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid profile update response.');
+        throw const FormatException('Invalid profile update response');
       },
     );
 

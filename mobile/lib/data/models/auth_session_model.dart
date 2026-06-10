@@ -10,7 +10,7 @@ class AuthSessionModel {
   factory AuthSessionModel.fromJson(Map<String, dynamic> json) {
     final userJson = json['user'];
     if (userJson is! Map<String, dynamic>) {
-      throw const FormatException('Invalid login response user.');
+      throw const FormatException('Invalid login response user');
     }
 
     return AuthSessionModel(

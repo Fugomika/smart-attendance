@@ -11,7 +11,7 @@ class WelcomePlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PlaceholderScreen(
       title: 'Smart Attendance',
-      description: 'Boilerplate welcome route is ready.',
+      description: 'Boilerplate welcome route is ready',
       actions: [
         ElevatedButton(
           onPressed: () => context.go(RouteNames.login),

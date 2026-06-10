@@ -181,7 +181,7 @@ class AdminEmployeeListController extends Notifier<AdminEmployeeListState> {
         isLoading: false,
         isLoadingMore: false,
         hasLoaded: true,
-        errorMessage: 'Data karyawan gagal dimuat. Silakan coba lagi.',
+        errorMessage: 'Data karyawan gagal dimuat. Silakan coba lagi',
       );
     }
   }
@@ -410,7 +410,7 @@ class AdminAttendanceReportController
         isLoading: false,
         isLoadingMore: false,
         hasLoaded: true,
-        errorMessage: 'Laporan presensi gagal dimuat. Silakan coba lagi.',
+        errorMessage: 'Laporan presensi gagal dimuat. Silakan coba lagi',
       );
     }
   }
@@ -607,7 +607,7 @@ class AdminAttendanceHistoryController
         isLoading: false,
         isLoadingMore: false,
         hasLoaded: true,
-        errorMessage: 'Riwayat presensi gagal dimuat. Silakan coba lagi.',
+        errorMessage: 'Riwayat presensi gagal dimuat. Silakan coba lagi',
       );
     }
   }
@@ -690,9 +690,9 @@ final adminAttendanceActionProvider =
 
 String adminReadErrorMessage(ApiException error) {
   return switch (error.statusCode) {
-    401 => 'Sesi berakhir. Silakan login kembali.',
-    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin.',
-    404 => 'Data yang diminta tidak ditemukan.',
+    401 => 'Sesi berakhir. Silakan login kembali',
+    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin',
+    404 => 'Data yang diminta tidak ditemukan',
     422 => error.displayMessage,
     _ => error.displayMessage,
   };
@@ -700,10 +700,10 @@ String adminReadErrorMessage(ApiException error) {
 
 String adminAttendanceActionErrorMessage(ApiException error) {
   return switch (error.statusCode) {
-    400 => 'Presensi ini sudah tidak berstatus pending.',
-    401 => 'Sesi berakhir. Silakan login kembali.',
-    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin.',
-    404 => 'Data presensi tidak ditemukan.',
+    400 => 'Presensi ini sudah tidak berstatus pending',
+    401 => 'Sesi berakhir. Silakan login kembali',
+    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin',
+    404 => 'Data presensi tidak ditemukan',
     422 => error.displayMessage,
     _ => error.displayMessage,
   };

@@ -174,7 +174,7 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
     if (attendance == null || attendance.status != AttendanceStatus.checkedIn) {
       AppSnackBar.error(
         context,
-        'Presensi hari ini belum siap untuk absen pulang.',
+        'Presensi hari ini belum siap untuk absen pulang',
       );
       return;
     }
@@ -209,7 +209,7 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
             if (submitted == null) {
               final message =
                   ref.read(clockOutControllerProvider).message ??
-                  'Absen pulang gagal disimpan. Coba lagi.';
+                  'Absen pulang gagal disimpan. Coba lagi';
               AppSnackBar.error(context, message);
               return;
             }
@@ -222,8 +222,8 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
             AppSnackBar.success(
               context,
               submitted.isOutside
-                  ? 'Absen pulang tersimpan dan menunggu validasi admin.'
-                  : 'Absen pulang berhasil disimpan.',
+                  ? 'Absen pulang tersimpan dan menunggu validasi admin'
+                  : 'Absen pulang berhasil disimpan',
             );
           },
         );
@@ -264,24 +264,24 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
     final resolvedHour = hour ?? DateTime.now().hour;
     final greetings = switch (resolvedHour) {
       >= 4 && < 11 => const [
-        'Selamat pagi, tetap produktif.',
-        'Pagi, semoga harimu lancar.',
-        'Selamat pagi, mulai hari dengan fokus.',
+        'Selamat pagi, tetap produktif',
+        'Pagi, semoga harimu lancar',
+        'Selamat pagi, mulai hari dengan fokus',
       ],
       >= 11 && < 15 => const [
-        'Selamat siang, tetap fokus.',
-        'Siang, jaga ritme kerjamu.',
-        'Selamat siang, lanjutkan progresmu.',
+        'Selamat siang, tetap fokus',
+        'Siang, jaga ritme kerjamu',
+        'Selamat siang, lanjutkan progresmu',
       ],
       >= 15 && < 18 => const [
-        'Selamat sore, cek presensimu.',
-        'Sore, tuntaskan hari dengan baik.',
-        'Selamat sore, pastikan presensimu aman.',
+        'Selamat sore, cek presensimu',
+        'Sore, tuntaskan hari dengan baik',
+        'Selamat sore, pastikan presensimu aman',
       ],
       _ => const [
-        'Selamat malam, presensi tetap aman.',
-        'Malam, jangan lupa cek presensimu.',
-        'Malam, pastikan presensimu aman.',
+        'Selamat malam, presensi tetap aman',
+        'Malam, jangan lupa cek presensimu',
+        'Malam, pastikan presensimu aman',
       ],
     };
 
@@ -347,7 +347,7 @@ enum _DebugAttendancePreview {
           : null,
       isOutside: this == _DebugAttendancePreview.checkedInOutside,
       outsideReason: this == _DebugAttendancePreview.checkedInOutside
-          ? 'Preview debug presensi luar kantor.'
+          ? 'Preview debug presensi luar kantor'
           : null,
     );
   }
@@ -457,7 +457,7 @@ class _HomeHeader extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadius.pill),
               onTap: () {
-                AppSnackBar.info(context, 'Belum ada notifikasi baru.');
+                AppSnackBar.info(context, 'Belum ada notifikasi baru');
               },
               child: const Center(
                 child: Icon(
@@ -830,7 +830,7 @@ class _HomeErrorCard extends StatelessWidget {
       child: EmptyState(
         icon: Icons.cloud_off_rounded,
         title: 'Presensi Belum Tersedia',
-        message: 'Data presensi hari ini belum bisa dimuat.',
+        message: 'Data presensi hari ini belum bisa dimuat',
         action: AppButton(
           label: 'Coba Lagi',
           icon: Icons.refresh_rounded,
@@ -966,8 +966,8 @@ class _ClockOutConfirmationSheet extends ConsumerWidget {
                             const SizedBox(height: AppSpacing.xs),
                             Text(
                               isOutside
-                                  ? 'Presensi hari ini tercatat dari luar area kantor. Setelah dikonfirmasi, data akan dikirim untuk validasi admin.'
-                                  : 'Periksa kembali ringkasan presensi hari ini sebelum mengakhiri sesi kerja.',
+                                  ? 'Presensi hari ini tercatat dari luar area kantor. Setelah dikonfirmasi, data akan dikirim untuk validasi admin'
+                                  : 'Periksa kembali ringkasan presensi hari ini sebelum mengakhiri sesi kerja',
                               style: AppTextStyles.body.copyWith(
                                 color: AppColors.textSecondary,
                                 height: 1.45,

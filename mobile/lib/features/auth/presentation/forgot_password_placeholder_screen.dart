@@ -77,7 +77,7 @@ class _ForgotPasswordPlaceholderScreenState
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
                     'Masukkan email akun Anda. Kami akan mengirim instruksi '
-                    'untuk reset password jika email terdaftar.',
+                    'untuk reset password jika email terdaftar',
                     style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondary,
                       fontSize: 15,
@@ -171,14 +171,14 @@ class _ForgotPasswordPlaceholderScreenState
     if (!success) {
       final message =
           ref.read(authControllerProvider).errorMessage ??
-          'Permintaan reset password gagal. Silakan coba lagi.';
+          'Permintaan reset password gagal. Silakan coba lagi';
       AppSnackBar.error(context, message);
       return;
     }
 
     AppSnackBar.info(
       context,
-      'Jika email terdaftar, instruksi reset password akan dikirim.',
+      'Jika email terdaftar, instruksi reset password akan dikirim',
     );
     context.go(RouteNames.login);
   }

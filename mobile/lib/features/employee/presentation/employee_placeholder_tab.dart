@@ -41,7 +41,7 @@ class EmployeePlaceholderTab extends StatelessWidget {
                   Text(title, style: AppTextStyles.h1),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Employee $title placeholder.',
+                    'Employee $title placeholder',
                     style: AppTextStyles.body,
                     textAlign: TextAlign.center,
                   ),

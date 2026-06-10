@@ -51,7 +51,7 @@ class AdminAttendanceDetail {
   factory AdminAttendanceDetail.fromJson(Map<String, dynamic> json) {
     final rawUser = json['user'];
     if (rawUser is! Map<String, dynamic>) {
-      throw const FormatException('Invalid admin attendance detail user.');
+      throw const FormatException('Invalid admin attendance detail user');
     }
 
     return AdminAttendanceDetail(
@@ -79,7 +79,7 @@ class AdminRepository {
           return AdminSummary.fromJson(json);
         }
 
-        throw const FormatException('Invalid admin summary response.');
+        throw const FormatException('Invalid admin summary response');
       },
     );
 
@@ -107,7 +107,7 @@ class AdminRepository {
           return AdminUserListResult.fromJson(json);
         }
 
-        throw const FormatException('Invalid admin user list response.');
+        throw const FormatException('Invalid admin user list response');
       },
     );
 
@@ -122,7 +122,7 @@ class AdminRepository {
           return UserModel.fromJson(json);
         }
 
-        throw const FormatException('Invalid admin user detail response.');
+        throw const FormatException('Invalid admin user detail response');
       },
     );
 
@@ -152,7 +152,7 @@ class AdminRepository {
           return AdminAttendanceListResult.fromJson(json);
         }
 
-        throw const FormatException('Invalid admin attendance list response.');
+        throw const FormatException('Invalid admin attendance list response');
       },
     );
 
@@ -182,7 +182,7 @@ class AdminRepository {
         }
 
         throw const FormatException(
-          'Invalid admin attendance report response.',
+          'Invalid admin attendance report response',
         );
       },
     );
@@ -201,7 +201,7 @@ class AdminRepository {
         }
 
         throw const FormatException(
-          'Invalid admin attendance detail response.',
+          'Invalid admin attendance detail response',
         );
       },
     );
@@ -217,7 +217,7 @@ class AdminRepository {
     if (status != AttendanceStatus.valid &&
         status != AttendanceStatus.rejected) {
       throw const FormatException(
-        'Invalid admin attendance validation status.',
+        'Invalid admin attendance validation status',
       );
     }
 
@@ -236,7 +236,7 @@ class AdminRepository {
         }
 
         throw const FormatException(
-          'Invalid admin attendance validation response.',
+          'Invalid admin attendance validation response',
         );
       },
     );
@@ -326,7 +326,7 @@ class AdminAttendanceReportResult {
                 );
                 if (rawUser is! Map<String, dynamic> || selectedDate == null) {
                   throw const FormatException(
-                    'Invalid admin attendance report record.',
+                    'Invalid admin attendance report record',
                   );
                 }
 
@@ -412,7 +412,7 @@ String _reportStatusApiValue(AdminAttendanceStatusFilter filter) {
 
   final status = filter.attendanceStatus;
   if (status == null) {
-    throw const FormatException('Invalid admin attendance report filter.');
+    throw const FormatException('Invalid admin attendance report filter');
   }
   return _attendanceStatusApiValue(status);
 }

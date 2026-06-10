@@ -63,7 +63,7 @@ class LocationValidationController extends Notifier<LocationValidationState> {
       if (await expireSessionOnUnauthorized(ref, error)) {
         state = const LocationValidationState(
           status: LocationValidationStatus.locationError,
-          message: 'Sesi berakhir. Silakan login kembali.',
+          message: 'Sesi berakhir. Silakan login kembali',
         );
         return;
       }
@@ -75,7 +75,7 @@ class LocationValidationController extends Notifier<LocationValidationState> {
     } catch (_) {
       state = const LocationValidationState(
         status: LocationValidationStatus.locationError,
-        message: 'Data kantor aktif gagal dimuat. Coba lagi.',
+        message: 'Data kantor aktif gagal dimuat. Coba lagi',
       );
     }
   }
@@ -104,8 +104,8 @@ class LocationValidationController extends Notifier<LocationValidationState> {
 
   String _officeErrorMessage(ApiException error) {
     return switch (error.statusCode) {
-      404 => 'Data kantor aktif belum tersedia.',
-      403 => 'Anda tidak memiliki akses untuk mengambil data kantor.',
+      404 => 'Data kantor aktif belum tersedia',
+      403 => 'Anda tidak memiliki akses untuk mengambil data kantor',
       _ => error.displayMessage,
     };
   }

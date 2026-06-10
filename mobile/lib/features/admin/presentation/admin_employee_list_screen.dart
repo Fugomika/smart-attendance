@@ -437,8 +437,8 @@ class _EmployeeEmptyState extends StatelessWidget {
     return EmptyState(
       title: hasQuery ? 'Karyawan tidak ditemukan' : 'Belum ada data karyawan',
       message: hasQuery
-          ? 'Gunakan nama atau email lain.'
-          : 'Data karyawan akan muncul di sini setelah tersedia.',
+          ? 'Gunakan nama atau email lain'
+          : 'Data karyawan akan muncul di sini setelah tersedia',
       icon: hasQuery ? Icons.search_off_rounded : Icons.groups_rounded,
     );
   }

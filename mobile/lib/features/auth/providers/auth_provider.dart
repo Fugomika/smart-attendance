@@ -86,7 +86,7 @@ class AuthController extends Notifier<AuthState> {
       state = AuthState.unauthenticated(errorMessage: error.displayMessage);
     } catch (_) {
       state = const AuthState.unauthenticated(
-        errorMessage: 'Sesi tidak dapat dipulihkan. Silakan login kembali.',
+        errorMessage: 'Sesi tidak dapat dipulihkan. Silakan login kembali',
       );
     }
   }
@@ -112,7 +112,7 @@ class AuthController extends Notifier<AuthState> {
 
       if (user == null) {
         state = const AuthState.unauthenticated(
-          errorMessage: 'Email atau password salah.',
+          errorMessage: 'Email atau password salah',
         );
         return false;
       }
@@ -127,7 +127,7 @@ class AuthController extends Notifier<AuthState> {
       return false;
     } catch (_) {
       state = const AuthState.unauthenticated(
-        errorMessage: 'Login gagal. Silakan coba lagi.',
+        errorMessage: 'Login gagal. Silakan coba lagi',
       );
       return false;
     }
@@ -158,7 +158,7 @@ class AuthController extends Notifier<AuthState> {
 
       if (user == null) {
         state = const AuthState.unauthenticated(
-          errorMessage: 'Pendaftaran gagal. Silakan coba lagi.',
+          errorMessage: 'Pendaftaran gagal. Silakan coba lagi',
         );
         return false;
       }
@@ -172,7 +172,7 @@ class AuthController extends Notifier<AuthState> {
       return false;
     } catch (_) {
       state = const AuthState.unauthenticated(
-        errorMessage: 'Pendaftaran gagal. Silakan coba lagi.',
+        errorMessage: 'Pendaftaran gagal. Silakan coba lagi',
       );
       return false;
     }
@@ -197,7 +197,7 @@ class AuthController extends Notifier<AuthState> {
       return false;
     } catch (_) {
       state = const AuthState.unauthenticated(
-        errorMessage: 'Permintaan reset password gagal. Silakan coba lagi.',
+        errorMessage: 'Permintaan reset password gagal. Silakan coba lagi',
       );
       return false;
     }
@@ -217,7 +217,7 @@ class AuthController extends Notifier<AuthState> {
     await ref.read(authTokenStoreProvider).clear();
     ref.read(appModeProvider.notifier).reset();
     state = const AuthState.unauthenticated(
-      errorMessage: 'Sesi berakhir. Silakan login kembali.',
+      errorMessage: 'Sesi berakhir. Silakan login kembali',
     );
   }
 
@@ -243,7 +243,7 @@ class AuthController extends Notifier<AuthState> {
 
   String _loginErrorMessage(ApiException error) {
     return switch (error.statusCode) {
-      401 => 'Email atau password salah.',
+      401 => 'Email atau password salah',
       403 => error.displayMessage,
       422 => error.displayMessage,
       _ => error.displayMessage,
@@ -252,7 +252,7 @@ class AuthController extends Notifier<AuthState> {
 
   String _registerErrorMessage(ApiException error) {
     return switch (error.statusCode) {
-      409 => 'Email sudah terdaftar.',
+      409 => 'Email sudah terdaftar',
       422 => error.displayMessage,
       _ => error.displayMessage,
     };
@@ -260,7 +260,7 @@ class AuthController extends Notifier<AuthState> {
 
   String _forgotPasswordErrorMessage(ApiException error) {
     return switch (error.statusCode) {
-      404 => 'Email tidak terdaftar.',
+      404 => 'Email tidak terdaftar',
       422 => error.displayMessage,
       _ => error.displayMessage,
     };
