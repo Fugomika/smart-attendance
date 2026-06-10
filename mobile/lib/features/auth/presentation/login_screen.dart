@@ -15,16 +15,14 @@ import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../providers/auth_provider.dart';
 
-class LoginPlaceholderScreen extends ConsumerStatefulWidget {
-  const LoginPlaceholderScreen({super.key});
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginPlaceholderScreen> createState() =>
-      _LoginPlaceholderScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginPlaceholderScreenState
-    extends ConsumerState<LoginPlaceholderScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 

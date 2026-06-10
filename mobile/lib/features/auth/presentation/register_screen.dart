@@ -13,16 +13,14 @@ import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../providers/auth_provider.dart';
 
-class RegisterPlaceholderScreen extends ConsumerStatefulWidget {
-  const RegisterPlaceholderScreen({super.key});
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterPlaceholderScreen> createState() =>
-      _RegisterPlaceholderScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterPlaceholderScreenState
-    extends ConsumerState<RegisterPlaceholderScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _positionController = TextEditingController();

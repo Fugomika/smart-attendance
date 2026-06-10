@@ -12,16 +12,15 @@ import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../providers/auth_provider.dart';
 
-class ForgotPasswordPlaceholderScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordPlaceholderScreen({super.key});
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordPlaceholderScreen> createState() =>
-      _ForgotPasswordPlaceholderScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordPlaceholderScreenState
-    extends ConsumerState<ForgotPasswordPlaceholderScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   String? _emailError;
 

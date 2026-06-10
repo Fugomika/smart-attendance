@@ -11,9 +11,9 @@ import '../../features/admin/presentation/admin_employee_detail_screen.dart';
 import '../../features/admin/presentation/admin_employee_list_screen.dart';
 import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/auth/providers/auth_provider.dart';
-import '../../features/auth/presentation/forgot_password_placeholder_screen.dart';
-import '../../features/auth/presentation/login_placeholder_screen.dart';
-import '../../features/auth/presentation/register_placeholder_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/employee/attendance/presentation/attendance_location_validation_screen.dart';
 import '../../features/employee/attendance/presentation/attendance_selfie_screen.dart';
@@ -92,19 +92,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.login,
         name: RouteNames.loginName,
         pageBuilder: (context, state) =>
-            _noTransitionPage(state, const LoginPlaceholderScreen()),
+            _noTransitionPage(state, const LoginScreen()),
       ),
       GoRoute(
         path: RouteNames.register,
         name: RouteNames.registerName,
         pageBuilder: (context, state) =>
-            _noTransitionPage(state, const RegisterPlaceholderScreen()),
+            _noTransitionPage(state, const RegisterScreen()),
       ),
       GoRoute(
         path: RouteNames.forgotPassword,
         name: RouteNames.forgotPasswordName,
         pageBuilder: (context, state) =>
-            _noTransitionPage(state, const ForgotPasswordPlaceholderScreen()),
+            _noTransitionPage(state, const ForgotPasswordScreen()),
       ),
       GoRoute(
         path: RouteNames.employeeAttendanceLocation,
