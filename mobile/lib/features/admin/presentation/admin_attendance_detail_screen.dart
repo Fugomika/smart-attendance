@@ -79,34 +79,45 @@ class AdminAttendanceDetailScreen extends ConsumerWidget {
             ),
             data: (detail) {
               final attendance = detail.attendance;
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _EmployeeCard(employee: detail.user),
-                    const SizedBox(height: AppSpacing.lg),
-                    _StatusOverview(attendance: attendance),
-                    const SizedBox(height: AppSpacing.lg),
-                    _AttendanceDetailCard(attendance: attendance, office: null),
-                    if (_shouldShowOutsideReason(attendance)) ...[
+              return RefreshIndicator(
+                onRefresh: () => ref.refresh(
+                  adminAttendanceDetailProvider(attendanceId).future,
+                ),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _EmployeeCard(employee: detail.user),
                       const SizedBox(height: AppSpacing.lg),
-                      _OutsideReasonCard(reason: attendance.outsideReason!),
-                    ],
-                    const SizedBox(height: AppSpacing.lg),
-                    _SelfieCard(selfieUrl: attendance.selfieUrl),
-                    if (_shouldShowAdminValidationInfo(attendance.status)) ...[
+                      _StatusOverview(attendance: attendance),
                       const SizedBox(height: AppSpacing.lg),
-                      _AdminValidationInfoCard(attendance: attendance),
-                    ],
-                    if (attendance.status == AttendanceStatus.pending) ...[
-                      const SizedBox(height: AppSpacing.lg),
-                      _ValidationActionCard(
-                        attendanceId: attendance.id,
-                        isSubmitting: isSubmitting,
+                      _AttendanceDetailCard(
+                        attendance: attendance,
+                        office: null,
                       ),
+                      if (_shouldShowOutsideReason(attendance)) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        _OutsideReasonCard(reason: attendance.outsideReason!),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      _SelfieCard(selfieUrl: attendance.selfieUrl),
+                      if (_shouldShowAdminValidationInfo(
+                        attendance.status,
+                      )) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        _AdminValidationInfoCard(attendance: attendance),
+                      ],
+                      if (attendance.status == AttendanceStatus.pending) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        _ValidationActionCard(
+                          attendanceId: attendance.id,
+                          isSubmitting: isSubmitting,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               );
             },

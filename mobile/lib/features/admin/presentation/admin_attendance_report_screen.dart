@@ -128,7 +128,14 @@ class _AdminAttendanceReportScreenState
                         ),
                       )
                     : reportState.records.isEmpty
-                    ? _ReportEmptyState(searchQuery: reportState.query)
+                    ? _RefreshableReportState(
+                        onRefresh: () => ref
+                            .read(adminAttendanceReportProvider.notifier)
+                            .refresh(),
+                        child: _ReportEmptyState(
+                          searchQuery: reportState.query,
+                        ),
+                      )
                     : RefreshIndicator(
                         onRefresh: () => ref
                             .read(adminAttendanceReportProvider.notifier)
@@ -233,6 +240,28 @@ class _AdminAttendanceReportScreenState
     ];
 
     return '${date.day} ${monthNames[date.month - 1]} ${date.year}';
+  }
+}
+
+class _RefreshableReportState extends StatelessWidget {
+  const _RefreshableReportState({required this.onRefresh, required this.child});
+
+  final Future<void> Function() onRefresh;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [SizedBox(height: constraints.maxHeight, child: child)],
+          ),
+        );
+      },
+    );
   }
 }
 

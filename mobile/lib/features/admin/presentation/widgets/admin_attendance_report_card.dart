@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/attendance_status_mapper.dart';
@@ -38,10 +39,11 @@ class AdminAttendanceReportCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProfileAvatarView(
-            name: row.user.name,
-            photoPath: row.user.photoUrl ?? row.user.photoId,
-            size: 52,
+          _ReportThumbnail(
+            userName: row.user.name,
+            profilePhotoPath: row.user.photoUrl ?? row.user.photoId,
+            selfieUrl: attendance?.selfieUrl,
+            hasAttendance: attendance != null,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -154,6 +156,67 @@ class AdminAttendanceReportCard extends StatelessWidget {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+}
+
+class _ReportThumbnail extends StatelessWidget {
+  const _ReportThumbnail({
+    required this.userName,
+    required this.profilePhotoPath,
+    required this.selfieUrl,
+    required this.hasAttendance,
+  });
+
+  final String userName;
+  final String? profilePhotoPath;
+  final String? selfieUrl;
+  final bool hasAttendance;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasAttendance) {
+      return ProfileAvatarView(
+        name: userName,
+        photoPath: profilePhotoPath,
+        size: 52,
+      );
+    }
+
+    final hasSelfie = selfieUrl != null && selfieUrl!.trim().isNotEmpty;
+
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: AppColors.canvasNeutral,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      child: hasSelfie
+          ? Image.network(
+              selfieUrl!,
+              width: 52,
+              height: 52,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const _SelfieFallback(),
+            )
+          : const _SelfieFallback(),
+    );
+  }
+}
+
+class _SelfieFallback extends StatelessWidget {
+  const _SelfieFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(
+      Icons.hide_image_outlined,
+      color: AppColors.textMuted,
+      size: 20,
+    );
   }
 }
 

@@ -39,132 +39,136 @@ class AdminDashboardScreen extends ConsumerWidget {
         backgroundColor: AppColors.background,
         body: SafeArea(
           bottom: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.xl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _DashboardHeader(
-                  name: displayName,
-                  photoPath: displayPhotoPath,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _DateFilterButton(
-                  selectedDate: selectedDate,
-                  onPressed: () => _pickDate(context, ref, selectedDate),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                summaryAsync.when(
-                  data: (summary) {
-                    final needsAttention =
-                        summary.pending + summary.absent + summary.others;
-                    final cards = [
-                      _AdminSummaryCardData(
-                        label: 'Hadir',
-                        value: summary.present,
-                        caption: 'Presensi valid',
-                        foregroundColor: AppColors.success,
-                        backgroundColor: const Color(0xFFF4FBF7),
-                        borderColor: const Color(0xFFCDEEDB),
-                        icon: Icons.check_circle_rounded,
-                      ),
-                      _AdminSummaryCardData(
-                        label: 'Pending',
-                        value: summary.pending,
-                        caption: 'Check-in / validasi',
-                        foregroundColor: AppColors.warningDark,
-                        backgroundColor: const Color(0xFFFFF8EA),
-                        borderColor: AppColors.warningLight,
-                        icon: Icons.pending_actions_rounded,
-                        isHighlighted: true,
-                        onTap: () =>
-                            _openPendingReport(context, ref, selectedDate),
-                      ),
-                      _AdminSummaryCardData(
-                        label: 'Tidak Hadir',
-                        value: summary.absent,
-                        caption: 'Belum ada record',
-                        foregroundColor: AppColors.danger,
-                        backgroundColor: const Color(0xFFFFF5F5),
-                        borderColor: const Color(0xFFFFC7C7),
-                        icon: Icons.person_off_rounded,
-                      ),
-                      _AdminSummaryCardData(
-                        label: 'Lainnya',
-                        value: summary.others,
-                        caption: 'Izin, sakit, libur',
-                        foregroundColor: AppColors.primary,
-                        backgroundColor: const Color(0xFFF4F6FF),
-                        borderColor: const Color(0xFFDCE3FF),
-                        icon: Icons.more_horiz_rounded,
-                      ),
-                    ];
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _TotalSummaryCard(
-                          total: summary.total,
-                          needsAttention: needsAttention,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Text(
-                          'Ringkasan Presensi',
-                          style: AppTextStyles.h3.copyWith(fontSize: 17),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final spacing = AppSpacing.md;
-                            final itemWidth =
-                                (constraints.maxWidth - spacing) / 2;
-
-                            return Wrap(
-                              spacing: spacing,
-                              runSpacing: spacing,
-                              children: [
-                                for (final card in cards)
-                                  SizedBox(
-                                    width: itemWidth,
-                                    child: _SummaryStatCard(data: card),
-                                  ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                  loading: () => const Padding(
-                    padding: EdgeInsets.only(top: AppSpacing.xl),
-                    child: LoadingState(
-                      message: 'Memuat rekap presensi admin...',
-                    ),
+          child: RefreshIndicator(
+            onRefresh: () => ref.refresh(adminSummaryProvider.future),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _DashboardHeader(
+                    name: displayName,
+                    photoPath: displayPhotoPath,
                   ),
-                  error: (error, _) => Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.xl),
-                    child: EmptyState(
-                      title: 'Rekap belum tersedia',
-                      message: error is ApiException
-                          ? adminReadErrorMessage(error)
-                          : 'Data dashboard admin belum bisa ditampilkan untuk tanggal ini',
-                      icon: Icons.grid_view_rounded,
-                      action: AppButton(
-                        label: 'Coba Lagi',
-                        icon: Icons.refresh_rounded,
-                        size: AppButtonSize.medium,
-                        variant: AppButtonVariant.secondary,
-                        onPressed: () => ref.invalidate(adminSummaryProvider),
+                  const SizedBox(height: AppSpacing.md),
+                  _DateFilterButton(
+                    selectedDate: selectedDate,
+                    onPressed: () => _pickDate(context, ref, selectedDate),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  summaryAsync.when(
+                    data: (summary) {
+                      final needsAttention =
+                          summary.pending + summary.absent + summary.others;
+                      final cards = [
+                        _AdminSummaryCardData(
+                          label: 'Hadir',
+                          value: summary.present,
+                          caption: 'Presensi valid',
+                          foregroundColor: AppColors.success,
+                          backgroundColor: const Color(0xFFF4FBF7),
+                          borderColor: const Color(0xFFCDEEDB),
+                          icon: Icons.check_circle_rounded,
+                        ),
+                        _AdminSummaryCardData(
+                          label: 'Pending',
+                          value: summary.pending,
+                          caption: 'Check-in / validasi',
+                          foregroundColor: AppColors.warningDark,
+                          backgroundColor: const Color(0xFFFFF8EA),
+                          borderColor: AppColors.warningLight,
+                          icon: Icons.pending_actions_rounded,
+                          isHighlighted: true,
+                          onTap: () =>
+                              _openPendingReport(context, ref, selectedDate),
+                        ),
+                        _AdminSummaryCardData(
+                          label: 'Tidak Hadir',
+                          value: summary.absent,
+                          caption: 'Belum ada record',
+                          foregroundColor: AppColors.danger,
+                          backgroundColor: const Color(0xFFFFF5F5),
+                          borderColor: const Color(0xFFFFC7C7),
+                          icon: Icons.person_off_rounded,
+                        ),
+                        _AdminSummaryCardData(
+                          label: 'Lainnya',
+                          value: summary.others,
+                          caption: 'Izin, sakit, libur',
+                          foregroundColor: AppColors.primary,
+                          backgroundColor: const Color(0xFFF4F6FF),
+                          borderColor: const Color(0xFFDCE3FF),
+                          icon: Icons.more_horiz_rounded,
+                        ),
+                      ];
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _TotalSummaryCard(
+                            total: summary.total,
+                            needsAttention: needsAttention,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          Text(
+                            'Ringkasan Presensi',
+                            style: AppTextStyles.h3.copyWith(fontSize: 17),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final spacing = AppSpacing.md;
+                              final itemWidth =
+                                  (constraints.maxWidth - spacing) / 2;
+
+                              return Wrap(
+                                spacing: spacing,
+                                runSpacing: spacing,
+                                children: [
+                                  for (final card in cards)
+                                    SizedBox(
+                                      width: itemWidth,
+                                      child: _SummaryStatCard(data: card),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                    loading: () => const Padding(
+                      padding: EdgeInsets.only(top: AppSpacing.xl),
+                      child: LoadingState(
+                        message: 'Memuat rekap presensi admin...',
                       ),
                     ),
+                    error: (error, _) => Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.xl),
+                      child: EmptyState(
+                        title: 'Rekap belum tersedia',
+                        message: error is ApiException
+                            ? adminReadErrorMessage(error)
+                            : 'Data dashboard admin belum bisa ditampilkan untuk tanggal ini',
+                        icon: Icons.grid_view_rounded,
+                        action: AppButton(
+                          label: 'Coba Lagi',
+                          icon: Icons.refresh_rounded,
+                          size: AppButtonSize.medium,
+                          variant: AppButtonVariant.secondary,
+                          onPressed: () => ref.invalidate(adminSummaryProvider),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
