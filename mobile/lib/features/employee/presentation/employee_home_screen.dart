@@ -8,6 +8,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../core/config/app_env.dart';
 import '../../../core/enums/attendance_status.dart';
 import '../../../core/utils/app_date_time_formatter.dart';
 import '../../../data/models/attendance_model.dart';
@@ -95,7 +96,7 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
                       hour: _debugGreetingPreview.hour,
                     ),
                   ),
-                  if (kDebugMode) ...[
+                  if (kDebugMode && AppEnv.showDebugPreview) ...[
                     const SizedBox(height: AppSpacing.lg),
                     _DebugPreviewPanel(
                       attendancePreview: _debugAttendancePreview,
@@ -288,7 +289,7 @@ class _EmployeeHomeScreenState extends ConsumerState<EmployeeHomeScreen> {
   }
 
   String _debugLocationLabel(String? liveOfficeName) {
-    if (kDebugMode && _useLongDebugLocation) {
+    if (kDebugMode && AppEnv.showDebugPreview && _useLongDebugLocation) {
       return 'Jl. Jenderal Sudirman Kav. 52-53, Senayan, Kebayoran Baru, Jakarta Selatan';
     }
 

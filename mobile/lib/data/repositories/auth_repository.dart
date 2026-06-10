@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
+
 import '../../core/network/api_client.dart';
 import '../../core/storage/auth_token_store.dart';
+import '../../core/utils/file_name_from_path.dart';
 import '../models/auth_session_model.dart';
 import '../models/user_model.dart';
 
@@ -69,14 +72,23 @@ class AuthRepository {
     required String password,
     String? photoPath,
   }) async {
-    final response = await _apiClient.post<UserModel>(
+    final normalizedPhotoPath = photoPath?.trim();
+    final response = await _apiClient.postMultipart<UserModel>(
       '/auth/register',
-      data: {
+      data: FormData.fromMap({
         'name': name.trim(),
         'email': email.trim().toLowerCase(),
         'password': password,
         'jabatan': position.trim(),
-      },
+        if (normalizedPhotoPath != null && normalizedPhotoPath.isNotEmpty)
+          'avatar': await MultipartFile.fromFile(
+            normalizedPhotoPath,
+            filename: fileNameFromPath(
+              normalizedPhotoPath,
+              fallback: 'avatar.jpg',
+            ),
+          ),
+      }),
       parseData: (json) {
         if (json is Map<String, dynamic>) {
           return UserModel.fromJson(json);

@@ -1,23 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/enums/attendance_status.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_config.dart';
 import '../../core/storage/auth_token_store.dart';
 import 'admin_repository.dart';
 import 'attendance_repository.dart';
 import 'auth_repository.dart';
-import '../dummy/dummy_attendances.dart';
-import '../dummy/dummy_offices.dart';
-import '../models/attendance_model.dart';
-import '../models/office_model.dart';
 import 'file_repository.dart';
 import 'office_repository.dart';
 import 'profile_repository.dart';
-import 'user_repository.dart';
 
 final apiConfigProvider = Provider<ApiConfig>((ref) {
-  return const ApiConfig();
+  return ApiConfig();
 });
 
 final authTokenStoreProvider = Provider<AuthTokenStore>((ref) {
@@ -47,155 +41,14 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepository(ref.watch(apiClientProvider));
 });
 
-final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return const UserRepository();
-});
-
-class AttendanceStoreController extends Notifier<List<AttendanceModel>> {
-  @override
-  List<AttendanceModel> build() => List<AttendanceModel>.of(dummyAttendances);
-
-  Future<AttendanceModel> clockIn({
-    required String userId,
-    required String officeId,
-    required DateTime attendanceDate,
-    required DateTime clockInTime,
-    required double clockInLat,
-    required double clockInLng,
-    required bool isOutside,
-    required String? outsideReason,
-    required String clockInPhotoId,
-  }) async {
-    final repository = AttendanceRepository(attendances: state);
-    final submitted = await repository.clockIn(
-      userId: userId,
-      officeId: officeId,
-      attendanceDate: attendanceDate,
-      clockInTime: clockInTime,
-      clockInLat: clockInLat,
-      clockInLng: clockInLng,
-      isOutside: isOutside,
-      outsideReason: outsideReason,
-      clockInPhotoId: clockInPhotoId,
-    );
-
-    state = [
-      for (final attendance in state)
-        if (_matchesUserAndDate(submitted, attendance))
-          submitted
-        else
-          attendance,
-      if (!state.any(
-        (attendance) => _matchesUserAndDate(submitted, attendance),
-      ))
-        submitted,
-    ];
-
-    return submitted;
-  }
-
-  Future<AttendanceModel> clockOut({
-    required String attendanceId,
-    required DateTime clockOutTime,
-  }) async {
-    final repository = AttendanceRepository(attendances: state);
-    final submitted = await repository.clockOut(
-      attendanceId: attendanceId,
-      clockOutTime: clockOutTime,
-    );
-
-    state = [
-      for (final attendance in state)
-        if (attendance.id == submitted.id) submitted else attendance,
-    ];
-
-    return submitted;
-  }
-
-  Future<AttendanceModel> validateAttendance({
-    required String attendanceId,
-    required AttendanceStatus targetStatus,
-    String? rejectNote,
-  }) async {
-    final repository = AttendanceRepository(attendances: state);
-    final submitted = await repository.validateAttendance(
-      attendanceId: attendanceId,
-      targetStatus: targetStatus,
-      rejectNote: rejectNote,
-    );
-
-    state = [
-      for (final attendance in state)
-        if (attendance.id == submitted.id) submitted else attendance,
-    ];
-
-    return submitted;
-  }
-
-  bool _matchesUserAndDate(AttendanceModel submitted, AttendanceModel current) {
-    return submitted.userId == current.userId &&
-        AttendanceRepository.isSameDate(
-          submitted.attendanceDate,
-          current.attendanceDate,
-        );
-  }
-}
-
-final attendanceStoreProvider =
-    NotifierProvider<AttendanceStoreController, List<AttendanceModel>>(
-      AttendanceStoreController.new,
-    );
-
 final attendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
-  return AttendanceRepository(
-    attendances: ref.watch(attendanceStoreProvider),
-    apiClient: ref.watch(apiClientProvider),
-  );
+  return AttendanceRepository(apiClient: ref.watch(apiClientProvider));
 });
-
-class OfficeStoreController extends Notifier<List<OfficeModel>> {
-  @override
-  List<OfficeModel> build() => List<OfficeModel>.of(dummyOffices);
-
-  OfficeModel? updatePrimaryOffice({
-    required String name,
-    required double latitude,
-    required double longitude,
-    required double radiusMeters,
-  }) {
-    if (state.isEmpty) {
-      return null;
-    }
-
-    final current = state.first;
-    final updated = OfficeModel(
-      id: current.id,
-      name: name.trim(),
-      latitude: latitude,
-      longitude: longitude,
-      radiusMeters: radiusMeters,
-    );
-
-    state = [updated, ...state.skip(1)];
-    return updated;
-  }
-}
-
-final officeStoreProvider =
-    NotifierProvider<OfficeStoreController, List<OfficeModel>>(
-      OfficeStoreController.new,
-    );
 
 final officeRepositoryProvider = Provider<OfficeRepository>((ref) {
-  return OfficeRepository(
-    apiClient: ref.watch(apiClientProvider),
-    offices: ref.watch(officeStoreProvider),
-  );
+  return OfficeRepository(apiClient: ref.watch(apiClientProvider));
 });
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
-  return AdminRepository(
-    ref.watch(userRepositoryProvider),
-    ref.watch(attendanceRepositoryProvider),
-  );
+  return AdminRepository(apiClient: ref.watch(apiClientProvider));
 });

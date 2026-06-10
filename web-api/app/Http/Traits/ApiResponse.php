@@ -123,6 +123,7 @@ trait ApiResponse
             'isOutside' => (bool) $att->isOutside,
             'officeId' => $att->getAttribute('OfficeId'),
             'officeName' => $att->office?->officeName,
+            'selfieUrl' => $att->photo ? $this->fileUrl($att->photo) : null,
         ];
     }
 

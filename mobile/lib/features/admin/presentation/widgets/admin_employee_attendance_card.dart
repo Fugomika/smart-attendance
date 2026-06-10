@@ -26,15 +26,13 @@ class AdminEmployeeAttendanceCard extends StatelessWidget {
     final statusStyle = AttendanceStatusMapper.fromAttendanceStatus(
       attendance.status,
     );
-    final photoName = attendance.clockInPhotoId?.trim();
-    final hasPhoto = photoName != null && photoName.isNotEmpty;
 
     return AppCard(
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _AttendanceThumbnail(hasPhoto: hasPhoto),
+          _AttendanceThumbnail(selfieUrl: attendance.selfieUrl),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -132,12 +130,14 @@ class AdminEmployeeAttendanceCard extends StatelessWidget {
 }
 
 class _AttendanceThumbnail extends StatelessWidget {
-  const _AttendanceThumbnail({required this.hasPhoto});
+  const _AttendanceThumbnail({required this.selfieUrl});
 
-  final bool hasPhoto;
+  final String? selfieUrl;
 
   @override
   Widget build(BuildContext context) {
+    final hasPhoto = selfieUrl != null && selfieUrl!.trim().isNotEmpty;
+
     return Container(
       width: 52,
       height: 52,
@@ -146,12 +146,30 @@ class _AttendanceThumbnail extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(color: AppColors.border),
       ),
+      clipBehavior: Clip.antiAlias,
       alignment: Alignment.center,
-      child: Icon(
-        hasPhoto ? Icons.photo_camera_outlined : Icons.hide_image_outlined,
-        color: hasPhoto ? AppColors.primary : AppColors.textMuted,
-        size: 20,
-      ),
+      child: hasPhoto
+          ? Image.network(
+              selfieUrl!,
+              width: 52,
+              height: 52,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const _ThumbnailFallback(),
+            )
+          : const _ThumbnailFallback(),
+    );
+  }
+}
+
+class _ThumbnailFallback extends StatelessWidget {
+  const _ThumbnailFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(
+      Icons.hide_image_outlined,
+      color: AppColors.textMuted,
+      size: 20,
     );
   }
 }

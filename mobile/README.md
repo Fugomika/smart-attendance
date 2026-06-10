@@ -2,7 +2,8 @@
 
 Smart Attendance adalah aplikasi presensi internal kantor berbasis Flutter. Aplikasi ini memiliki dua mode, yaitu mode karyawan dan mode admin.
 
-Pada tahap ini aplikasi sedang di-wire bertahap ke Laravel API Phase 1. Auth dan profile sudah memakai API; fitur admin, office, dan attendance tertentu masih memakai dummy/in-memory sesuai batch integrasi.
+Auth, profile, employee attendance, dan core admin mobile sudah di-wire ke
+Laravel API Phase 1 dan Phase 2.
 
 ## Status Fitur
 
@@ -28,21 +29,23 @@ Pada tahap ini aplikasi sedang di-wire bertahap ke Laravel API Phase 1. Auth dan
 - Flutter Test untuk widget test
 - Flutter Analyze untuk pengecekan kualitas kode
 
-## Akun Dev API
+## Environment
 
-Karyawan:
+Copy `.env.example` menjadi `.env` di folder `mobile/`, lalu sesuaikan:
 
-```txt
-Email    : user@gmail.com
-Password : password
+```env
+API_BASE_URL=http://192.168.1.5:8000/api/v1
+SHOW_DEBUG_PREVIEW=true
 ```
 
-Admin:
-
-```txt
-Email    : admin@gmail.com
-Password : Admin123
-```
+- `.env` digunakan otomatis saat aplikasi dimulai sehingga development cukup
+  memakai `flutter run`.
+- `.env` tidak boleh berisi password, token, atau secret karena file tersebut
+  dibundel sebagai asset aplikasi.
+- `SHOW_DEBUG_PREVIEW` hanya berpengaruh pada debug build karena UI preview
+  tetap dilindungi `kDebugMode`.
+- Sebelum production build, isi `.env` dengan URL production dan set
+  `SHOW_DEBUG_PREVIEW=false`.
 
 ## Struktur Folder
 
@@ -50,7 +53,7 @@ Password : Admin123
 lib/
   app/        konfigurasi aplikasi, routing, dan theme
   core/       enum dan helper umum
-  data/       model, dummy data, repository, dan API repository
+  data/       model, data lokal terbatas, repository, dan API repository
   features/   fitur aplikasi seperti auth, employee, dan admin
   shared/     widget reusable yang dipakai di banyak halaman
 ```
@@ -70,14 +73,14 @@ Project ini menggunakan struktur sederhana berbasis fitur.
 
 - `app` digunakan untuk pengaturan utama aplikasi seperti theme dan routing.
 - `core` digunakan untuk kebutuhan umum yang bisa dipakai di banyak fitur.
-- `data` digunakan untuk menyimpan model, dummy data, repository, dan API repository.
+- `data` digunakan untuk menyimpan model, data lokal terbatas, repository, dan API repository.
 - `features` digunakan untuk memisahkan bagian aplikasi berdasarkan fitur.
 - `shared` digunakan untuk komponen UI yang dipakai berulang.
 
 Alur data:
 
 ```txt
-Screen -> Provider -> Repository -> API Client / Dummy Store
+Screen -> Provider -> Repository -> API Client
 ```
 
 Navigasi utama menggunakan shell navigation agar bottom navigation tetap stabil saat berpindah menu.
@@ -98,6 +101,5 @@ flutter test
 
 ## Catatan
 
-- Base URL dev HP saat ini: `http://192.168.1.6:8000/api/v1`.
-- Admin feature data masih dummy untuk Phase 1.
-- Office dan attendance API masih dikerjakan bertahap 
+- Base URL dibaca dari `.env`.
+- Dummy holidays masih dipertahankan karena berada di luar scope API Phase 2.

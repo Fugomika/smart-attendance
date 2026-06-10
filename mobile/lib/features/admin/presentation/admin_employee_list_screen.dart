@@ -1,30 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
-import '../../../app/router/route_names.dart';
 import '../../../data/models/user_model.dart';
+import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/loading_state.dart';
 import '../../../shared/widgets/profile_avatar_view.dart';
-import 'package:go_router/go_router.dart';
+import '../providers/admin_providers.dart';
 import 'widgets/admin_tab_header.dart';
 import 'widgets/admin_user_status_badge.dart';
-import '../providers/admin_providers.dart';
 
-class AdminEmployeeListScreen extends ConsumerWidget {
+class AdminEmployeeListScreen extends ConsumerStatefulWidget {
   const AdminEmployeeListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedFilter = ref.watch(adminEmployeeStatusFilterProvider);
-    final searchQuery = ref.watch(adminEmployeeSearchQueryProvider);
-    final employees = ref.watch(filteredEmployeeListProvider);
+  ConsumerState<AdminEmployeeListScreen> createState() =>
+      _AdminEmployeeListScreenState();
+}
+
+class _AdminEmployeeListScreenState
+    extends ConsumerState<AdminEmployeeListScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final state = ref.read(adminEmployeeListProvider);
+      if (!state.hasLoaded && !state.isLoading) {
+        ref.read(adminEmployeeListProvider.notifier).loadInitial();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients ||
+        _scrollController.position.extentAfter > 320) {
+      return;
+    }
+    ref.read(adminEmployeeListProvider.notifier).loadMore();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final listState = ref.watch(adminEmployeeListProvider);
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.primary,
@@ -44,10 +84,10 @@ class AdminEmployeeListScreen extends ConsumerWidget {
                   0,
                 ),
                 child: _EmployeeStatusTabs(
-                  selectedFilter: selectedFilter,
+                  selectedFilter: listState.filter,
                   onSelected: (filter) {
                     ref
-                        .read(adminEmployeeStatusFilterProvider.notifier)
+                        .read(adminEmployeeListProvider.notifier)
                         .setFilter(filter);
                   },
                 ),
@@ -63,42 +103,160 @@ class AdminEmployeeListScreen extends ConsumerWidget {
                   hintText: 'Cari nama atau email',
                   onChanged: (value) {
                     ref
-                        .read(adminEmployeeSearchQueryProvider.notifier)
+                        .read(adminEmployeeListProvider.notifier)
                         .setQuery(value);
                   },
                 ),
               ),
               Expanded(
-                child: employees.isEmpty
-                    ? _EmployeeEmptyState(searchQuery: searchQuery)
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.lg,
-                          0,
-                          AppSpacing.lg,
-                          AppSpacing.xl,
-                        ),
-                        itemCount: employees.length,
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: AppSpacing.md),
-                        itemBuilder: (context, index) {
-                          final employee = employees[index];
-                          return _AdminEmployeeCard(
-                            employee: employee,
-                            onTap: () {
-                              context.push(
-                                RouteNames.adminEmployeeDetailPath(employee.id),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                child: _EmployeeListContent(
+                  state: listState,
+                  scrollController: _scrollController,
+                  onRefresh: () =>
+                      ref.read(adminEmployeeListProvider.notifier).refresh(),
+                  onRetry: () => ref
+                      .read(adminEmployeeListProvider.notifier)
+                      .loadInitial(),
+                  onLoadMoreRetry: () =>
+                      ref.read(adminEmployeeListProvider.notifier).loadMore(),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+class _EmployeeListContent extends StatelessWidget {
+  const _EmployeeListContent({
+    required this.state,
+    required this.scrollController,
+    required this.onRefresh,
+    required this.onRetry,
+    required this.onLoadMoreRetry,
+  });
+
+  final AdminEmployeeListState state;
+  final ScrollController scrollController;
+  final Future<void> Function() onRefresh;
+  final VoidCallback onRetry;
+  final VoidCallback onLoadMoreRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.isLoading && state.records.isEmpty) {
+      return const LoadingState(message: 'Memuat data karyawan...');
+    }
+
+    if (state.errorMessage != null && state.records.isEmpty) {
+      return EmptyState(
+        icon: Icons.cloud_off_rounded,
+        title: 'Data Karyawan Tidak Tersedia',
+        message: state.errorMessage!,
+        action: AppButton(
+          label: 'Coba Lagi',
+          icon: Icons.refresh_rounded,
+          size: AppButtonSize.medium,
+          variant: AppButtonVariant.secondary,
+          onPressed: onRetry,
+        ),
+      );
+    }
+
+    if (state.records.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          controller: scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: 420,
+              child: _EmployeeEmptyState(searchQuery: state.query),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final showFooter =
+        state.isLoadingMore || state.errorMessage != null || state.hasMore;
+    final itemCount = state.records.length + (showFooter ? 1 : 0);
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.separated(
+        controller: scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          AppSpacing.xl,
+        ),
+        itemCount: itemCount,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+        itemBuilder: (context, index) {
+          if (index == state.records.length) {
+            return _EmployeeListFooter(state: state, onRetry: onLoadMoreRetry);
+          }
+
+          final employee = state.records[index];
+          return _AdminEmployeeCard(
+            employee: employee,
+            onTap: () {
+              context.push(RouteNames.adminEmployeeDetailPath(employee.id));
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _EmployeeListFooter extends StatelessWidget {
+  const _EmployeeListFooter({required this.state, required this.onRetry});
+
+  final AdminEmployeeListState state;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (state.errorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Column(
+          children: [
+            Text(
+              state.errorMessage!,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: 'Coba Muat Lagi',
+              icon: Icons.refresh_rounded,
+              size: AppButtonSize.small,
+              variant: AppButtonVariant.secondary,
+              onPressed: onRetry,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 
@@ -197,7 +355,7 @@ class _AdminEmployeeCard extends StatelessWidget {
         children: [
           ProfileAvatarView(
             name: employee.name,
-            photoPath: employee.photoId,
+            photoPath: employee.photoUrl ?? employee.photoId,
             size: 56,
           ),
           const SizedBox(width: AppSpacing.md),

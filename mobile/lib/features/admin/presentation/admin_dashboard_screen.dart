@@ -8,7 +8,9 @@ import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/enums/admin_attendance_status_filter.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/utils/app_date_time_formatter.dart';
+import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_state.dart';
@@ -144,13 +146,21 @@ class AdminDashboardScreen extends ConsumerWidget {
                       message: 'Memuat rekap presensi admin...',
                     ),
                   ),
-                  error: (_, _) => const Padding(
-                    padding: EdgeInsets.only(top: AppSpacing.xl),
+                  error: (error, _) => Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xl),
                     child: EmptyState(
                       title: 'Rekap belum tersedia',
-                      message:
-                          'Data dashboard admin belum bisa ditampilkan untuk tanggal ini.',
+                      message: error is ApiException
+                          ? adminReadErrorMessage(error)
+                          : 'Data dashboard admin belum bisa ditampilkan untuk tanggal ini.',
                       icon: Icons.grid_view_rounded,
+                      action: AppButton(
+                        label: 'Coba Lagi',
+                        icon: Icons.refresh_rounded,
+                        size: AppButtonSize.medium,
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () => ref.invalidate(adminSummaryProvider),
+                      ),
                     ),
                   ),
                 ),
@@ -203,12 +213,11 @@ class AdminDashboardScreen extends ConsumerWidget {
     DateTime selectedDate,
   ) {
     ref
-        .read(adminAttendanceReportSelectedDateProvider.notifier)
-        .setDate(selectedDate);
-    ref
-        .read(adminAttendanceReportStatusFilterProvider.notifier)
-        .setFilter(AdminAttendanceStatusFilter.pending);
-    ref.read(adminAttendanceReportSearchQueryProvider.notifier).setQuery('');
+        .read(adminAttendanceReportProvider.notifier)
+        .openWith(
+          selectedDate: selectedDate,
+          filter: AdminAttendanceStatusFilter.pending,
+        );
     context.go(RouteNames.adminReports);
   }
 }

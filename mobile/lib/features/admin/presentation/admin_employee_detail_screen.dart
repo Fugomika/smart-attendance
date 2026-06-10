@@ -9,34 +9,69 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/enums/admin_attendance_status_filter.dart';
 import '../../../core/enums/user_role.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/utils/app_date_time_formatter.dart';
 import '../../../data/models/user_model.dart';
+import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/loading_state.dart';
 import '../../../shared/widgets/profile_avatar_view.dart';
 import 'widgets/admin_employee_attendance_card.dart';
 import 'widgets/admin_filter_dropdown.dart';
 import 'widgets/admin_user_status_badge.dart';
 import '../providers/admin_providers.dart';
 
-class AdminEmployeeDetailScreen extends ConsumerWidget {
+class AdminEmployeeDetailScreen extends ConsumerStatefulWidget {
   const AdminEmployeeDetailScreen({required this.employeeId, super.key});
 
   final String employeeId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final employee = ref.watch(adminEmployeeDetailProvider(employeeId));
+  ConsumerState<AdminEmployeeDetailScreen> createState() =>
+      _AdminEmployeeDetailScreenState();
+}
+
+class _AdminEmployeeDetailScreenState
+    extends ConsumerState<AdminEmployeeDetailScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(adminAttendanceHistoryProvider.notifier)
+          .loadInitial(widget.employeeId);
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 320) {
+      ref.read(adminAttendanceHistoryProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final employeeAsync = ref.watch(
+      adminEmployeeDetailProvider(widget.employeeId),
+    );
     final months = ref.watch(
-      adminEmployeeAttendanceHistoryMonthsProvider(employeeId),
+      adminEmployeeAttendanceHistoryMonthsProvider(widget.employeeId),
     );
-    final selectedMonth = ref.watch(adminEmployeeSelectedMonthProvider);
-    final activeMonth = selectedMonth ?? months.first;
-    final statusFilter = ref.watch(adminEmployeeAttendanceStatusFilterProvider);
-    final histories = ref.watch(
-      adminFilteredEmployeeAttendanceHistoryProvider(employeeId),
-    );
+    final historyState = ref.watch(adminAttendanceHistoryProvider);
+    final isCurrentHistory = historyState.employeeId == widget.employeeId;
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.surface,
@@ -55,87 +90,143 @@ class AdminEmployeeDetailScreen extends ConsumerWidget {
           title: Text('Detail Karyawan', style: AppTextStyles.h2),
         ),
         body: SafeArea(
-          child: employee == null
-              ? const EmptyState(
-                  icon: Icons.person_search_rounded,
-                  title: 'Karyawan Tidak Ditemukan',
-                  message: 'Data karyawan ini tidak tersedia.',
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _EmployeeProfileSummary(employee: employee),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Riwayat Presensi',
-                        style: AppTextStyles.h3.copyWith(fontSize: 20),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _MonthFilter(
-                        months: months,
-                        activeMonth: activeMonth,
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-
-                          ref
-                              .read(adminEmployeeSelectedMonthProvider.notifier)
-                              .setMonth(value);
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _StatusFilterDropdown(
-                        value: statusFilter,
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-
-                          ref
-                              .read(
-                                adminEmployeeAttendanceStatusFilterProvider
-                                    .notifier,
-                              )
-                              .setFilter(value);
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      if (histories.isEmpty)
-                        const EmptyState(
-                          icon: Icons.event_busy_rounded,
-                          title: 'Riwayat Kosong',
-                          message:
-                              'Tidak ada data presensi pada periode yang dipilih.',
-                        )
-                      else
-                        ...histories.map((attendance) {
-                          final office = ref.watch(
-                            adminAttendanceOfficeProvider(attendance.officeId),
-                          );
-
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppSpacing.md,
-                            ),
-                            child: AdminEmployeeAttendanceCard(
-                              attendance: attendance,
-                              officeName: office?.name ?? '-',
-                              onTap: () {
-                                context.push(
-                                  RouteNames.adminAttendanceDetailPath(
-                                    attendance.id,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        }),
-                    ],
-                  ),
+          child: employeeAsync.when(
+            loading: () =>
+                const LoadingState(message: 'Memuat detail karyawan...'),
+            error: (error, _) => EmptyState(
+              icon: Icons.person_search_rounded,
+              title: error is ApiException && error.statusCode == 404
+                  ? 'Karyawan Tidak Ditemukan'
+                  : 'Detail Karyawan Tidak Tersedia',
+              message: error is ApiException
+                  ? adminReadErrorMessage(error)
+                  : 'Data karyawan gagal dimuat. Silakan coba lagi.',
+              action: AppButton(
+                label: 'Coba Lagi',
+                icon: Icons.refresh_rounded,
+                size: AppButtonSize.medium,
+                variant: AppButtonVariant.secondary,
+                onPressed: () => ref.invalidate(
+                  adminEmployeeDetailProvider(widget.employeeId),
                 ),
+              ),
+            ),
+            data: (employee) => RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(adminEmployeeDetailProvider(widget.employeeId));
+                await ref
+                    .read(adminAttendanceHistoryProvider.notifier)
+                    .refresh();
+              },
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _EmployeeProfileSummary(employee: employee),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
+                      'Riwayat Presensi',
+                      style: AppTextStyles.h3.copyWith(fontSize: 20),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _MonthFilter(
+                      months: months,
+                      activeMonth: isCurrentHistory
+                          ? historyState.selectedMonth
+                          : months.first,
+                      onChanged: (value) {
+                        if (value != null) {
+                          ref
+                              .read(adminAttendanceHistoryProvider.notifier)
+                              .setMonth(value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _StatusFilterDropdown(
+                      value: isCurrentHistory
+                          ? historyState.filter
+                          : AdminAttendanceStatusFilter.all,
+                      onChanged: (value) {
+                        if (value != null) {
+                          ref
+                              .read(adminAttendanceHistoryProvider.notifier)
+                              .setFilter(value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    if (!isCurrentHistory || historyState.isLoading)
+                      const LoadingState(message: 'Memuat riwayat presensi...')
+                    else if (historyState.errorMessage != null &&
+                        historyState.records.isEmpty)
+                      EmptyState(
+                        icon: Icons.event_busy_rounded,
+                        title: 'Riwayat Tidak Tersedia',
+                        message: historyState.errorMessage!,
+                        action: AppButton(
+                          label: 'Coba Lagi',
+                          icon: Icons.refresh_rounded,
+                          size: AppButtonSize.medium,
+                          variant: AppButtonVariant.secondary,
+                          onPressed: () => ref
+                              .read(adminAttendanceHistoryProvider.notifier)
+                              .refresh(),
+                        ),
+                      )
+                    else if (historyState.records.isEmpty)
+                      const EmptyState(
+                        icon: Icons.event_busy_rounded,
+                        title: 'Riwayat Kosong',
+                        message:
+                            'Tidak ada data presensi pada periode yang dipilih.',
+                      )
+                    else ...[
+                      ...historyState.records.map((attendance) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                          child: AdminEmployeeAttendanceCard(
+                            attendance: attendance,
+                            officeName: attendance.officeName ?? '-',
+                            onTap: () {
+                              context.push(
+                                RouteNames.adminAttendanceDetailPath(
+                                  attendance.id,
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }),
+                      if (historyState.isLoadingMore)
+                        const Padding(
+                          padding: EdgeInsets.all(AppSpacing.md),
+                          child: LoadingState(
+                            message: 'Memuat data berikutnya...',
+                          ),
+                        ),
+                      if (historyState.errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.sm),
+                          child: AppButton(
+                            label: 'Coba Muat Lagi',
+                            icon: Icons.refresh_rounded,
+                            size: AppButtonSize.medium,
+                            variant: AppButtonVariant.secondary,
+                            onPressed: () => ref
+                                .read(adminAttendanceHistoryProvider.notifier)
+                                .loadMore(),
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -169,7 +260,7 @@ class _EmployeeProfileSummary extends StatelessWidget {
         children: [
           ProfileAvatarView(
             name: employee.name,
-            photoPath: employee.photoId,
+            photoPath: employee.photoUrl ?? employee.photoId,
             size: 76,
           ),
           const SizedBox(width: AppSpacing.md),

@@ -40,7 +40,7 @@ class AdminAttendanceReportCard extends StatelessWidget {
         children: [
           ProfileAvatarView(
             name: row.user.name,
-            photoPath: row.user.photoId,
+            photoPath: row.user.photoUrl ?? row.user.photoId,
             size: 52,
           ),
           const SizedBox(width: AppSpacing.md),

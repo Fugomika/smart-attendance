@@ -1,94 +1,141 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../data/models/office_model.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class OfficeSettingState extends Equatable {
   const OfficeSettingState({
-    required this.id,
-    required this.name,
-    required this.latitude,
-    required this.longitude,
-    required this.radiusMeters,
+    this.office,
+    this.isLoading = false,
+    this.isSaving = false,
+    this.hasLoaded = false,
+    this.errorMessage,
   });
 
-  final String id;
-  final String name;
-  final double latitude;
-  final double longitude;
-  final double radiusMeters;
-
-  factory OfficeSettingState.fromOffice(OfficeModel office) {
-    return OfficeSettingState(
-      id: office.id,
-      name: office.name,
-      latitude: office.latitude,
-      longitude: office.longitude,
-      radiusMeters: office.radiusMeters,
-    );
-  }
+  final OfficeModel? office;
+  final bool isLoading;
+  final bool isSaving;
+  final bool hasLoaded;
+  final String? errorMessage;
 
   OfficeSettingState copyWith({
-    String? id,
-    String? name,
-    double? latitude,
-    double? longitude,
-    double? radiusMeters,
+    OfficeModel? office,
+    bool? isLoading,
+    bool? isSaving,
+    bool? hasLoaded,
+    String? errorMessage,
+    bool clearError = false,
   }) {
     return OfficeSettingState(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      radiusMeters: radiusMeters ?? this.radiusMeters,
+      office: office ?? this.office,
+      isLoading: isLoading ?? this.isLoading,
+      isSaving: isSaving ?? this.isSaving,
+      hasLoaded: hasLoaded ?? this.hasLoaded,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, latitude, longitude, radiusMeters];
+  List<Object?> get props => [
+    office,
+    isLoading,
+    isSaving,
+    hasLoaded,
+    errorMessage,
+  ];
 }
 
-class OfficeSettingController extends Notifier<OfficeSettingState?> {
+class OfficeSettingController extends Notifier<OfficeSettingState> {
   @override
-  OfficeSettingState? build() {
-    final office = ref.watch(officeRepositoryProvider).getPrimaryOffice();
-    if (office == null) {
-      return null;
-    }
+  OfficeSettingState build() => const OfficeSettingState();
 
-    return OfficeSettingState.fromOffice(office);
+  Future<void> load() async {
+    if (state.isLoading) {
+      return;
+    }
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final office = await ref.read(officeRepositoryProvider).getActiveOffice();
+      state = state.copyWith(
+        office: office,
+        isLoading: false,
+        hasLoaded: true,
+        clearError: true,
+      );
+    } on ApiException catch (error) {
+      await expireSessionOnUnauthorized(ref, error);
+      state = state.copyWith(
+        isLoading: false,
+        hasLoaded: true,
+        errorMessage: officeSettingErrorMessage(error),
+      );
+    } catch (_) {
+      state = state.copyWith(
+        isLoading: false,
+        hasLoaded: true,
+        errorMessage: 'Data kantor aktif gagal dimuat. Silakan coba lagi.',
+      );
+    }
   }
 
-  void saveOffice({
+  Future<void> saveOffice({
     required String name,
     required double latitude,
     required double longitude,
-    required double radiusMeters,
-  }) {
-    final current = state;
-    if (current == null) {
+    required int radiusMeter,
+  }) async {
+    final current = state.office;
+    if (current == null || state.isSaving) {
       return;
     }
-
-    final saved = ref
-        .read(officeStoreProvider.notifier)
-        .updatePrimaryOffice(
-          name: name,
-          latitude: latitude,
-          longitude: longitude,
-          radiusMeters: radiusMeters,
-        );
-
-    if (saved == null) {
-      return;
+    state = state.copyWith(isSaving: true, clearError: true);
+    try {
+      final saved = await ref
+          .read(officeRepositoryProvider)
+          .updateActiveOffice(
+            officeId: current.id,
+            name: name,
+            latitude: latitude,
+            longitude: longitude,
+            radiusMeter: radiusMeter,
+          );
+      state = state.copyWith(
+        office: saved,
+        isSaving: false,
+        hasLoaded: true,
+        clearError: true,
+      );
+    } on ApiException catch (error) {
+      await expireSessionOnUnauthorized(ref, error);
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: officeSettingErrorMessage(error),
+      );
+      rethrow;
+    } catch (_) {
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: 'Lokasi kantor gagal disimpan. Silakan coba lagi.',
+      );
+      rethrow;
     }
-
-    state = OfficeSettingState.fromOffice(saved);
   }
 }
 
 final officeSettingControllerProvider =
-    NotifierProvider<OfficeSettingController, OfficeSettingState?>(
+    NotifierProvider<OfficeSettingController, OfficeSettingState>(
       OfficeSettingController.new,
     );
+
+String officeSettingErrorMessage(ApiException error) {
+  return switch (error.statusCode) {
+    401 => 'Sesi berakhir. Silakan login kembali.',
+    403 => 'Akses ditolak. Akun ini tidak memiliki akses admin.',
+    404 => 'Data kantor aktif tidak ditemukan.',
+    422 => error.displayMessage,
+    _ => error.displayMessage,
+  };
+}

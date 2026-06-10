@@ -10,6 +10,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/enums/attendance_status.dart';
 import '../../../core/enums/user_role.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/utils/app_date_time_formatter.dart';
 import '../../../core/utils/attendance_location_detail.dart';
 import '../../../core/utils/attendance_status_mapper.dart';
@@ -23,6 +24,7 @@ import '../../../shared/widgets/app_form_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/attendance_info_row.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/loading_state.dart';
 import '../../../shared/widgets/profile_avatar_view.dart';
 import '../../../shared/widgets/status_badge.dart';
 import 'widgets/admin_user_status_badge.dart';
@@ -35,13 +37,8 @@ class AdminAttendanceDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final attendance = ref.watch(adminAttendanceDetailProvider(attendanceId));
-    final employee = attendance == null
-        ? null
-        : ref.watch(adminAttendanceUserProvider(attendance.userId));
-    final office = attendance == null
-        ? null
-        : ref.watch(adminAttendanceOfficeProvider(attendance.officeId));
+    final detailAsync = ref.watch(adminAttendanceDetailProvider(attendanceId));
+    final isSubmitting = ref.watch(adminAttendanceActionProvider);
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.surface,
@@ -60,46 +57,60 @@ class AdminAttendanceDetailScreen extends ConsumerWidget {
           title: Text('Detail Presensi', style: AppTextStyles.h2),
         ),
         body: SafeArea(
-          child: attendance == null
-              ? const EmptyState(
-                  icon: Icons.event_busy_rounded,
-                  title: 'Data Tidak Ditemukan',
-                  message: 'Detail presensi ini tidak tersedia.',
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _EmployeeCard(employee: employee),
+          child: detailAsync.when(
+            loading: () =>
+                const LoadingState(message: 'Memuat detail presensi...'),
+            error: (error, _) => EmptyState(
+              icon: Icons.event_busy_rounded,
+              title: error is ApiException && error.statusCode == 404
+                  ? 'Data Tidak Ditemukan'
+                  : 'Detail Presensi Tidak Tersedia',
+              message: error is ApiException
+                  ? adminReadErrorMessage(error)
+                  : 'Detail presensi gagal dimuat. Silakan coba lagi.',
+              action: AppButton(
+                label: 'Coba Lagi',
+                icon: Icons.refresh_rounded,
+                size: AppButtonSize.medium,
+                variant: AppButtonVariant.secondary,
+                onPressed: () =>
+                    ref.invalidate(adminAttendanceDetailProvider(attendanceId)),
+              ),
+            ),
+            data: (detail) {
+              final attendance = detail.attendance;
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _EmployeeCard(employee: detail.user),
+                    const SizedBox(height: AppSpacing.lg),
+                    _StatusOverview(attendance: attendance),
+                    const SizedBox(height: AppSpacing.lg),
+                    _AttendanceDetailCard(attendance: attendance, office: null),
+                    if (_shouldShowOutsideReason(attendance)) ...[
                       const SizedBox(height: AppSpacing.lg),
-                      _StatusOverview(attendance: attendance),
-                      const SizedBox(height: AppSpacing.lg),
-                      _AttendanceDetailCard(
-                        attendance: attendance,
-                        office: office,
-                      ),
-                      if (_shouldShowOutsideReason(attendance)) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        _OutsideReasonCard(reason: attendance.outsideReason!),
-                      ],
-                      const SizedBox(height: AppSpacing.lg),
-                      _SelfiePlaceholderCard(
-                        photoId: attendance.clockInPhotoId,
-                      ),
-                      if (_shouldShowAdminValidationInfo(
-                        attendance.status,
-                      )) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        _AdminValidationInfoCard(attendance: attendance),
-                      ],
-                      if (attendance.status == AttendanceStatus.pending) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        _ValidationActionCard(attendanceId: attendance.id),
-                      ],
+                      _OutsideReasonCard(reason: attendance.outsideReason!),
                     ],
-                  ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _SelfieCard(selfieUrl: attendance.selfieUrl),
+                    if (_shouldShowAdminValidationInfo(attendance.status)) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      _AdminValidationInfoCard(attendance: attendance),
+                    ],
+                    if (attendance.status == AttendanceStatus.pending) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      _ValidationActionCard(
+                        attendanceId: attendance.id,
+                        isSubmitting: isSubmitting,
+                      ),
+                    ],
+                  ],
                 ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -143,7 +154,7 @@ class _EmployeeCard extends StatelessWidget {
         children: [
           ProfileAvatarView(
             name: employee!.name,
-            photoPath: employee!.photoId,
+            photoPath: employee!.photoUrl ?? employee!.photoId,
             size: 64,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -422,14 +433,14 @@ class _OutsideReasonCard extends StatelessWidget {
   }
 }
 
-class _SelfiePlaceholderCard extends StatelessWidget {
-  const _SelfiePlaceholderCard({required this.photoId});
+class _SelfieCard extends StatelessWidget {
+  const _SelfieCard({required this.selfieUrl});
 
-  final String? photoId;
+  final String? selfieUrl;
 
   @override
   Widget build(BuildContext context) {
-    final hasPhoto = photoId != null && photoId!.trim().isNotEmpty;
+    final hasPhoto = selfieUrl != null && selfieUrl!.trim().isNotEmpty;
 
     return AppCard(
       child: Column(
@@ -445,25 +456,46 @@ class _SelfiePlaceholderCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.large),
               border: Border.all(color: AppColors.border),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.photo_camera_outlined,
-                  size: 44,
-                  color: AppColors.textMuted,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  hasPhoto ? 'Placeholder foto: $photoId' : 'Foto belum ada',
-                  style: AppTextStyles.caption,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasPhoto
+                ? Image.network(
+                    selfieUrl!,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      return progress == null
+                          ? child
+                          : const Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (_, _, _) => const _SelfieFallback(),
+                  )
+                : const _SelfieFallback(),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SelfieFallback extends StatelessWidget {
+  const _SelfieFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.hide_image_outlined,
+          size: 44,
+          color: AppColors.textMuted,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          'Foto selfie tidak tersedia',
+          style: AppTextStyles.caption,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
@@ -497,9 +529,13 @@ class _AdminValidationInfoCard extends StatelessWidget {
 }
 
 class _ValidationActionCard extends ConsumerWidget {
-  const _ValidationActionCard({required this.attendanceId});
+  const _ValidationActionCard({
+    required this.attendanceId,
+    required this.isSubmitting,
+  });
 
   final String attendanceId;
+  final bool isSubmitting;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -523,19 +559,23 @@ class _ValidationActionCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: AppButton(
-                  label: 'Tolak',
+                  label: isSubmitting ? 'Memproses...' : 'Tolak',
                   variant: AppButtonVariant.danger,
                   size: AppButtonSize.medium,
-                  onPressed: () => _confirmReject(context, ref),
+                  onPressed: isSubmitting
+                      ? null
+                      : () => _confirmReject(context, ref),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: AppButton(
-                  label: 'Setujui',
+                  label: isSubmitting ? 'Memproses...' : 'Setujui',
                   variant: AppButtonVariant.success,
                   size: AppButtonSize.medium,
-                  onPressed: () => _confirmApprove(context, ref),
+                  onPressed: isSubmitting
+                      ? null
+                      : () => _confirmApprove(context, ref),
                 ),
               ),
             ],
@@ -559,14 +599,18 @@ class _ValidationActionCard extends ConsumerWidget {
 
     try {
       await ref
-          .read(adminAttendanceActionProvider)
+          .read(adminAttendanceActionProvider.notifier)
           .approveAttendance(attendanceId);
       if (context.mounted) {
         AppSnackBar.success(context, 'Presensi berhasil disetujui.');
       }
+    } on ApiException catch (error) {
+      if (context.mounted) {
+        AppSnackBar.error(context, adminAttendanceActionErrorMessage(error));
+      }
     } catch (_) {
       if (context.mounted) {
-        AppSnackBar.error(context, 'Presensi gagal disetujui.');
+        AppSnackBar.error(context, 'Presensi gagal disetujui. Coba lagi.');
       }
     }
   }
@@ -630,14 +674,18 @@ class _ValidationActionCard extends ConsumerWidget {
 
     try {
       await ref
-          .read(adminAttendanceActionProvider)
+          .read(adminAttendanceActionProvider.notifier)
           .rejectAttendance(attendanceId, note: decision.note);
       if (context.mounted) {
         AppSnackBar.success(context, 'Presensi berhasil ditolak.');
       }
+    } on ApiException catch (error) {
+      if (context.mounted) {
+        AppSnackBar.error(context, adminAttendanceActionErrorMessage(error));
+      }
     } catch (_) {
       if (context.mounted) {
-        AppSnackBar.error(context, 'Presensi gagal ditolak.');
+        AppSnackBar.error(context, 'Presensi gagal ditolak. Coba lagi.');
       }
     }
   }

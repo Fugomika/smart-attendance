@@ -47,6 +47,7 @@ dependencies:
   url_launcher: ^6.3.2
   dio: ^5.9.2
   flutter_secure_storage: ^10.3.1
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -94,6 +95,7 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
+    - .env
     - assets/images/
     - assets/icons/
     - assets/illustrations/

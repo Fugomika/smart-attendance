@@ -127,7 +127,8 @@ class AdminReadApiTest extends TestCase
     {
         $employee = $this->createUser('Attendance Employee');
         $other = $this->createUser('Other Employee');
-        $juneValid = $this->createAttendance($employee, 'VALID', '2026-06-09');
+        $photo = $this->createFile($employee);
+        $juneValid = $this->createAttendance($employee, 'VALID', '2026-06-09', photo: $photo);
         $this->createAttendance($employee, 'PENDING', '2026-05-09');
         $this->createAttendance($other, 'VALID', '2026-06-08');
 
@@ -138,7 +139,8 @@ class AdminReadApiTest extends TestCase
             ->assertJsonPath('data.count', 1)
             ->assertJsonPath('data.records.0.id', $juneValid->id)
             ->assertJsonPath('data.records.0.userId', $employee->id)
-            ->assertJsonPath('data.records.0.officeId', $juneValid->getAttribute('OfficeId'));
+            ->assertJsonPath('data.records.0.officeId', $juneValid->getAttribute('OfficeId'))
+            ->assertJsonPath('data.records.0.selfieUrl', url('/storage/'.$photo->objectKey));
 
         $this->getJson('/api/v1/admin/attendances?pageSize=1')
             ->assertOk()
@@ -152,7 +154,8 @@ class AdminReadApiTest extends TestCase
         $present = $this->createUser('Present User');
         $absent = $this->createUser('Absent User');
         $inactive = $this->createUser('Inactive User', 'EMPLOYEE', 'INACTIVE');
-        $attendance = $this->createAttendance($present, 'VALID');
+        $photo = $this->createFile($present);
+        $attendance = $this->createAttendance($present, 'VALID', photo: $photo);
         $this->createAttendance($inactive, 'VALID');
 
         Sanctum::actingAs($this->admin);
@@ -163,6 +166,7 @@ class AdminReadApiTest extends TestCase
 
         $records = collect($response->json('data.records'))->keyBy('user.id');
         $this->assertSame($attendance->id, $records[$present->id]['attendance']['id']);
+        $this->assertSame(url('/storage/'.$photo->objectKey), $records[$present->id]['attendance']['selfieUrl']);
         $this->assertNull($records[$absent->id]['attendance']);
         $this->assertFalse($records->has($inactive->id));
     }

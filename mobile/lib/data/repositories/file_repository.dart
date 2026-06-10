@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../core/network/api_client.dart';
+import '../../core/utils/file_name_from_path.dart';
 import '../models/file_upload_model.dart';
 
 class FileRepository {
@@ -26,7 +27,7 @@ class FileRepository {
         'context': context,
         'file': await MultipartFile.fromFile(
           filePath,
-          filename: _fileNameFromPath(filePath),
+          filename: fileNameFromPath(filePath),
         ),
       }),
       parseData: (json) {
@@ -39,12 +40,5 @@ class FileRepository {
     );
 
     return response.data;
-  }
-
-  String _fileNameFromPath(String path) {
-    final normalized = path.replaceAll('\\', '/');
-    final segments = normalized.split('/');
-    final fileName = segments.isNotEmpty ? segments.last : '';
-    return fileName.trim().isEmpty ? 'upload.jpg' : fileName;
   }
 }

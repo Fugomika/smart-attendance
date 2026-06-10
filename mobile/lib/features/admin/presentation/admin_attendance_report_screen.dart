@@ -9,6 +9,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/enums/admin_attendance_status_filter.dart';
 import '../../../core/utils/app_date_time_formatter.dart';
+import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/app_system_overlay.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -18,15 +19,44 @@ import 'widgets/admin_tab_header.dart';
 import 'widgets/admin_attendance_report_card.dart';
 import 'widgets/admin_filter_dropdown.dart';
 
-class AdminAttendanceReportScreen extends ConsumerWidget {
+class AdminAttendanceReportScreen extends ConsumerStatefulWidget {
   const AdminAttendanceReportScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDate = ref.watch(adminAttendanceReportSelectedDateProvider);
-    final searchQuery = ref.watch(adminAttendanceReportSearchQueryProvider);
-    final statusFilter = ref.watch(adminAttendanceReportStatusFilterProvider);
-    final rowsAsync = ref.watch(adminAttendanceReportRowsProvider);
+  ConsumerState<AdminAttendanceReportScreen> createState() =>
+      _AdminAttendanceReportScreenState();
+}
+
+class _AdminAttendanceReportScreenState
+    extends ConsumerState<AdminAttendanceReportScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(adminAttendanceReportProvider.notifier).loadInitial();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 320) {
+      ref.read(adminAttendanceReportProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reportState = ref.watch(adminAttendanceReportProvider);
 
     return AppSystemOverlay.darkIcons(
       statusBarColor: AppColors.primary,
@@ -52,30 +82,26 @@ class AdminAttendanceReportScreen extends ConsumerWidget {
                       hintText: 'Cari nama atau email',
                       onChanged: (value) {
                         ref
-                            .read(
-                              adminAttendanceReportSearchQueryProvider.notifier,
-                            )
+                            .read(adminAttendanceReportProvider.notifier)
                             .setQuery(value);
                       },
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _DateFilterButton(
-                      date: selectedDate,
-                      onTap: () => _pickDate(context, ref, selectedDate),
+                      date: reportState.selectedDate,
+                      onTap: () =>
+                          _pickDate(context, ref, reportState.selectedDate),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _StatusFilterDropdown(
-                      value: statusFilter,
+                      value: reportState.filter,
                       onChanged: (value) {
                         if (value == null) {
                           return;
                         }
 
                         ref
-                            .read(
-                              adminAttendanceReportStatusFilterProvider
-                                  .notifier,
-                            )
+                            .read(adminAttendanceReportProvider.notifier)
                             .setFilter(value);
                       },
                     ),
@@ -83,61 +109,86 @@ class AdminAttendanceReportScreen extends ConsumerWidget {
                 ),
               ),
               Expanded(
-                child: rowsAsync.when(
-                  loading: () =>
-                      const LoadingState(message: 'Memuat laporan presensi...'),
-                  error: (_, _) => const EmptyState(
-                    icon: Icons.description_outlined,
-                    title: 'Laporan Tidak Tersedia',
-                    message: 'Data laporan belum bisa ditampilkan.',
-                  ),
-                  data: (rows) {
-                    if (rows.isEmpty) {
-                      return _ReportEmptyState(searchQuery: searchQuery);
-                    }
+                child: reportState.isLoading
+                    ? const LoadingState(message: 'Memuat laporan presensi...')
+                    : reportState.errorMessage != null &&
+                          reportState.records.isEmpty
+                    ? EmptyState(
+                        icon: Icons.description_outlined,
+                        title: 'Laporan Tidak Tersedia',
+                        message: reportState.errorMessage!,
+                        action: AppButton(
+                          label: 'Coba Lagi',
+                          icon: Icons.refresh_rounded,
+                          size: AppButtonSize.medium,
+                          variant: AppButtonVariant.secondary,
+                          onPressed: () => ref
+                              .read(adminAttendanceReportProvider.notifier)
+                              .refresh(),
+                        ),
+                      )
+                    : reportState.records.isEmpty
+                    ? _ReportEmptyState(searchQuery: reportState.query)
+                    : RefreshIndicator(
+                        onRefresh: () => ref
+                            .read(adminAttendanceReportProvider.notifier)
+                            .refresh(),
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.lg,
+                            0,
+                            AppSpacing.lg,
+                            AppSpacing.xl,
+                          ),
+                          itemCount:
+                              reportState.records.length +
+                              (reportState.isLoadingMore ||
+                                      reportState.errorMessage != null
+                                  ? 1
+                                  : 0),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: AppSpacing.md),
+                          itemBuilder: (context, index) {
+                            if (index == reportState.records.length) {
+                              if (reportState.isLoadingMore) {
+                                return const LoadingState(
+                                  message: 'Memuat data berikutnya...',
+                                );
+                              }
+                              return AppButton(
+                                label: 'Coba Muat Lagi',
+                                icon: Icons.refresh_rounded,
+                                size: AppButtonSize.medium,
+                                variant: AppButtonVariant.secondary,
+                                onPressed: () => ref
+                                    .read(
+                                      adminAttendanceReportProvider.notifier,
+                                    )
+                                    .loadMore(),
+                              );
+                            }
 
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        0,
-                        AppSpacing.lg,
-                        AppSpacing.xl,
-                      ),
-                      itemCount: rows.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: AppSpacing.md),
-                      itemBuilder: (context, index) {
-                        final row = rows[index];
-                        final attendance = row.attendance;
-                        final officeName = attendance == null
-                            ? '-'
-                            : ref
-                                      .watch(
-                                        adminAttendanceOfficeProvider(
-                                          attendance.officeId,
+                            final row = reportState.records[index];
+                            final attendance = row.attendance;
+                            return AdminAttendanceReportCard(
+                              row: row,
+                              dateLabel: _formatShortDate(row.selectedDate),
+                              officeName: attendance?.officeName ?? '-',
+                              onTap: attendance == null
+                                  ? null
+                                  : () {
+                                      context.push(
+                                        RouteNames.adminAttendanceDetailPath(
+                                          attendance.id,
                                         ),
-                                      )
-                                      ?.name ??
-                                  '-';
-
-                        return AdminAttendanceReportCard(
-                          row: row,
-                          dateLabel: _formatShortDate(row.selectedDate),
-                          officeName: officeName,
-                          onTap: attendance == null
-                              ? null
-                              : () {
-                                  context.push(
-                                    RouteNames.adminAttendanceDetailPath(
-                                      attendance.id,
-                                    ),
-                                  );
-                                },
-                        );
-                      },
-                    );
-                  },
-                ),
+                                      );
+                                    },
+                            );
+                          },
+                        ),
+                      ),
               ),
             ],
           ),
@@ -162,9 +213,7 @@ class AdminAttendanceReportScreen extends ConsumerWidget {
       return;
     }
 
-    ref
-        .read(adminAttendanceReportSelectedDateProvider.notifier)
-        .setDate(pickedDate);
+    ref.read(adminAttendanceReportProvider.notifier).setDate(pickedDate);
   }
 
   String _formatShortDate(DateTime date) {

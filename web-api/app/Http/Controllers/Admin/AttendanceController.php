@@ -31,7 +31,10 @@ class AttendanceController extends Controller
             'sortOrder' => 'sometimes|in:ASC,DESC',
         ]);
 
-        $query = Attendance::with('office');
+        $query = Attendance::with([
+            'office:id,officeName',
+            'photo:id,objectKey',
+        ]);
 
         if ($request->filled('userId')) {
             $query->where('UserId', $request->userId);
@@ -75,7 +78,10 @@ class AttendanceController extends Controller
                 'photo',
                 'attendances' => fn ($attendance) => $attendance
                     ->whereDate('attendanceDate', $date)
-                    ->with('office'),
+                    ->with([
+                        'office:id,officeName',
+                        'photo:id,objectKey',
+                    ]),
             ])
             ->where('status', 'ACTIVE');
 

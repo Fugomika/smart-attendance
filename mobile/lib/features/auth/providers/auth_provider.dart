@@ -260,6 +260,7 @@ class AuthController extends Notifier<AuthState> {
 
   String _forgotPasswordErrorMessage(ApiException error) {
     return switch (error.statusCode) {
+      404 => 'Email tidak terdaftar.',
       422 => error.displayMessage,
       _ => error.displayMessage,
     };
