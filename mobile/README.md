@@ -1,107 +1,161 @@
 # Smart Attendance Mobile
 
-Smart Attendance adalah aplikasi presensi internal kantor berbasis Flutter. Aplikasi ini memiliki dua mode, yaitu mode karyawan dan mode admin.
+Smart Attendance Mobile adalah aplikasi Flutter untuk presensi employee dan
+operasional admin. Aplikasi ini terhubung ke Laravel API melalui Sanctum Bearer
+Token dan memakai pola `Screen -> Provider -> Repository -> ApiClient`.
 
-Auth, profile, employee attendance, dan core admin mobile sudah di-wire ke
-Laravel API Phase 1 dan Phase 2.
+## Fitur
 
-## Status Fitur
+Employee:
 
-- Login API untuk karyawan dan admin
-- Register, forgot password, profile, upload foto profile, dan ubah password via API
-- Tampilan dasar mode karyawan: Home, Riwayat, Profil
-- Tampilan dasar mode admin: Dashboard, Karyawan, Laporan, Profil
-- Routing dasar antar halaman
-- Tema warna sesuai style guide
-- Komponen UI reusable dasar
+- Login, register dengan avatar opsional, forgot-password, profile, dan logout.
+- Clock-in/clock-out dengan validasi lokasi dan selfie.
+- Riwayat dan detail presensi.
+- Outside reason, remote selfie, reject note, dan Google Maps direction.
+
+Admin:
+
+- Dashboard summary.
+- List/detail karyawan.
+- History presensi per karyawan.
+- Laporan presensi per tanggal.
+- Detail presensi dengan selfie, lokasi, outside reason, dan reject note.
+- Approve/reject presensi pending.
+- Update active office.
+- Pull-to-refresh dan infinite scroll pada flow admin utama.
 
 ## Tech Stack
 
-- Flutter
-- Dart
-- Riverpod untuk state management
-- GoRouter untuk routing
-- Google Fonts untuk font Poppins
-- Intl untuk format tanggal dan waktu
+- Flutter dan Dart.
+- Riverpod untuk state management.
+- GoRouter untuk routing.
+- Dio untuk HTTP client.
+- Flutter Secure Storage untuk token.
+- flutter_dotenv untuk environment.
+- Camera, image_picker, geolocator, flutter_map, dan url_launcher.
 
-## Testing Stack
+## Quick Start
 
-- Flutter Test untuk widget test
-- Flutter Analyze untuk pengecekan kualitas kode
+```bash
+cd mobile
+cp .env.example .env
+flutter pub get
+flutter run
+```
 
-## Environment
+Windows PowerShell:
 
-Copy `.env.example` menjadi `.env` di folder `mobile/`, lalu sesuaikan:
+```powershell
+Copy-Item .env.example .env
+```
+
+Sesuaikan `mobile/.env` sebelum menjalankan aplikasi:
 
 ```env
-API_BASE_URL=http://192.168.1.5:8000/api/v1
+API_BASE_URL=http://159.89.196.37:8765/api/v1
 SHOW_DEBUG_PREVIEW=false
 ```
 
-- `.env` digunakan otomatis saat aplikasi dimulai sehingga development cukup
-  memakai `flutter run`.
-- `.env` tidak boleh berisi password, token, atau secret karena file tersebut
-  dibundel sebagai asset aplikasi.
-- `API_BASE_URL` wajib berupa URL HTTP/HTTPS valid. Aplikasi berhenti dengan
-  error konfigurasi jika nilainya kosong atau tidak valid.
-- `SHOW_DEBUG_PREVIEW` hanya berpengaruh pada debug build karena UI preview
+Catatan:
+
+- `API_BASE_URL` wajib berakhir dengan `/api/v1`.
+- Lakukan full restart setelah mengubah `.env`.
+- `.env` dibundel sebagai asset aplikasi, jadi jangan menyimpan password, token,
+  atau secret di file ini.
+- `SHOW_DEBUG_PREVIEW=true` hanya berpengaruh pada debug build karena UI preview
   tetap dilindungi `kDebugMode`.
-- Sebelum production build, isi `.env` dengan URL production dan set
-  `SHOW_DEBUG_PREVIEW=false`.
 
 ## Struktur Folder
 
 ```txt
 lib/
-  app/        konfigurasi aplikasi, routing, dan theme
-  core/       enum dan helper umum
-  data/       model, data lokal terbatas, repository, dan API repository
-  features/   fitur aplikasi seperti auth, employee, dan admin
-  shared/     widget reusable yang dipakai di banyak halaman
+  app/        routing, theme, dan setup aplikasi
+  core/       config, enum, network, storage, dan utility umum
+  data/       models, repositories, dan provider dependency
+  features/   auth, employee, admin, profile, dan shared feature
+  shared/     widget reusable lintas fitur
 ```
 
-Folder asset:
+## Command Development
 
-```txt
-assets/
-  images/         gambar umum seperti logo
-  icons/          icon custom jika dibutuhkan
-  illustrations/  ilustrasi halaman
-```
-
-## Architecture
-
-Project ini menggunakan struktur sederhana berbasis fitur.
-
-- `app` digunakan untuk pengaturan utama aplikasi seperti theme dan routing.
-- `core` digunakan untuk kebutuhan umum yang bisa dipakai di banyak fitur.
-- `data` digunakan untuk menyimpan model, data lokal terbatas, repository, dan API repository.
-- `features` digunakan untuk memisahkan bagian aplikasi berdasarkan fitur.
-- `shared` digunakan untuk komponen UI yang dipakai berulang.
-
-Alur data:
-
-```txt
-Screen -> Provider -> Repository -> API Client
-```
-
-Navigasi utama menggunakan shell navigation agar bottom navigation tetap stabil saat berpindah menu.
-
-## Menjalankan Project
+Install dependency:
 
 ```bash
 flutter pub get
+```
+
+Run debug:
+
+```bash
 flutter run
 ```
 
-Untuk pengecekan kode:
+Quality check:
 
 ```bash
 flutter analyze
 flutter test
 ```
 
-## Catatan
+Format file Dart yang disentuh:
 
-- Base URL dibaca dari `.env`.
-- Dummy holidays masih dipertahankan karena berada di luar scope API Phase 2.
+```bash
+dart format <path-file-dart>
+```
+
+## Build APK Release
+
+Pastikan `mobile/.env` sudah mengarah ke API target release/internal:
+
+```env
+API_BASE_URL=http://159.89.196.37:8765/api/v1
+SHOW_DEBUG_PREVIEW=false
+```
+
+API di atas masih memakai HTTP dan sudah diizinkan secara scoped pada Android
+network security config untuk kebutuhan release internal. Untuk release publik,
+gunakan HTTPS.
+
+Pastikan file signing lokal sudah tersedia dan tidak di-commit:
+
+```txt
+android/key.properties
+android/app/smart-attendance-release.jks
+```
+
+Isi `android/key.properties`:
+
+```properties
+storePassword=PASSWORD_KEYSTORE
+keyPassword=PASSWORD_KEY
+keyAlias=smart-attendance
+storeFile=app/smart-attendance-release.jks
+```
+
+Build APK:
+
+```bash
+flutter clean
+flutter pub get
+flutter analyze
+flutter test
+flutter build apk --release
+```
+
+Output APK:
+
+```txt
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Untuk Play Store, gunakan AAB:
+
+```bash
+flutter build appbundle --release
+```
+
+## Catatan Release
+
+- `android/key.properties` dan file `.jks` sudah di-ignore oleh Git.
+- Simpan backup keystore dan password dengan aman.
+- Application ID saat ini masih `com.kel6_abp.smartattendnace`.

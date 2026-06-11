@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Dev-only scoped HTTP access for Laravel API on local development hosts. -->
+    <!-- Scoped HTTP access for development/internal API hosts. -->
     <application
         android:label="Smart Attendance"
         android:name="${applicationName}"

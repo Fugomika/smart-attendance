@@ -1,9 +1,6 @@
-ui_shared/admin
-ui_shared/user
-ui_shared/main
-# docs/api
-mobile/docs/batches/
+ui_shared
+docs
+mobile/docs
+mobile/.env
 
-# plan.md
 
-ui_shared/agents
